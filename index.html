@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf7f2">
+<meta name="description" content="A fun game that scores how well two ages and two initials match. English and Arabic.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Match Map">
+<title>Match Map: The Age Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#faf7f2;--ink:#1d1b22;--muted:#6a6570;--accent:#b0413e;--line:#e7e1d8;--card:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-tap-highlight-color:transparent;background:var(--bg);color:var(--ink);
+    font-family:"Poppins","Cairo",system-ui,"Segoe UI",sans-serif;font-size:17px;line-height:1.65}
+  html[lang=ar] body{font-family:"Cairo",system-ui,Tahoma,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:22px 16px 48px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  h1{font-size:clamp(30px,5.5vw,46px);margin:0;line-height:1.2;font-weight:800}
+  .sub{color:var(--muted);margin:2px 0 0}
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .modes{display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px}
+  .modes button{font:inherit;font-weight:800;font-size:15px;border:0;background:transparent;border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--muted)}
+  .modes button.on{background:var(--ink);color:#fff}
+  .lang{font:inherit;font-weight:800;font-size:15px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;color:var(--ink)}
+  .lang:hover{border-color:var(--ink)}
+  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+  @media (max-width:860px){.grid{grid-template-columns:1fr}#calc,#game{order:-1}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(30,20,10,.04)}
+  .card h2{font-size:19px;margin:0 0 12px;font-weight:800}
+  #svg{width:100%;height:auto;display:block;direction:ltr;cursor:crosshair}
+  .scale{display:flex;align-items:center;gap:10px;justify-content:center;font-size:14px;color:var(--muted);margin-top:6px;direction:ltr}
+  .bar{width:220px;height:12px;border-radius:6px;background:linear-gradient(90deg,#c0392b,#e67e3a,#f2c75c,#a8cf72,#2e8b57)}
+  .hint{font-size:14px;color:var(--muted);text-align:center;margin:4px 0 0}
+  .names{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .names input{width:100%;font:inherit;font-size:16px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--ink)}
+  .field label{display:flex;justify-content:space-between;align-items:baseline;font-weight:600}
+  .field output{font-size:28px;font-weight:800;color:var(--accent)}
+  input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+  .btn{font:inherit;font-weight:800;font-size:16px;background:var(--ink);color:#fff;border:0;border-radius:999px;padding:9px 20px;cursor:pointer}
+  .btn:hover{background:var(--accent)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+  .center{text-align:center}
+  .badge{display:inline-flex;align-items:center;justify-content:center;width:110px;height:110px;border-radius:50%;font-size:52px;margin:6px auto;box-shadow:0 0 0 8px rgba(0,0,0,.05);transition:background .4s}
+  .initials{font-size:30px;font-weight:800;letter-spacing:1px;white-space:nowrap}
+  .initials small{font-size:20px;color:var(--accent);margin:0 4px}
+  .pop{animation:pop .45s ease}
+  @keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+  .pct{font-size:44px;font-weight:800;line-height:1}
+  .bonus{font-size:15px;font-weight:600;color:var(--muted);margin-top:6px}
+  .bonus b{color:var(--ink)}
+  .tier{font-size:24px;font-weight:800;margin:6px 0 2px}
+  .desc{color:#3a3540;margin:0 0 6px}
+  .meter{height:12px;background:var(--line);border-radius:6px;overflow:hidden;margin:12px 0 4px;direction:ltr}
+  .meter span{display:block;height:100%;transition:width .6s,background .4s}
+  .tips{text-align:start;margin:12px 0 0;padding:10px 12px;background:var(--bg);border-radius:12px;font-size:15px;color:#3a3540}
+  .hud{display:flex;justify-content:space-between;font-weight:800;color:var(--muted);font-size:15px;margin-bottom:6px}
+  .couple{display:flex;justify-content:center;gap:18px;align-items:center;margin:8px 0 14px}
+  .person{background:var(--bg);border-radius:14px;padding:10px 16px;min-width:120px;text-align:center}
+  .person .n{font-weight:800;font-size:20px}
+  .person .a{font-size:30px;font-weight:800;color:var(--accent);line-height:1.1}
+  .av{width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px}
+  .heart{font-size:30px}
+  .choices{display:grid;gap:8px}
+  .choice{font:inherit;font-weight:800;font-size:16px;border:2px solid transparent;border-radius:12px;padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:start;color:var(--ink)}
+  .choice:hover:not(:disabled){border-color:var(--ink)}
+  .choice:disabled{cursor:default;opacity:.55}
+  .choice.right{opacity:1;border-color:#2e8b57;box-shadow:0 0 0 3px rgba(46,139,87,.25)}
+  .choice.wrong{opacity:1;border-color:var(--accent)}
+  .feedback{min-height:56px;margin-top:10px;font-weight:800}
+  .final .big{font-size:56px;font-weight:800;color:var(--accent);line-height:1}
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:15px}
+  .hidden{display:none !important}
+  footer{margin-top:22px;font-size:14px;color:var(--muted);text-align:center}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;opacity:0;transition:opacity .3s;pointer-events:none}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 data-t="title"></h1>
+      <p class="sub" data-t="sub"></p>
+    </div>
+    <div class="tools">
+      <button class="btn hidden" id="install" style="font-size:14px;padding:6px 14px"></button>
+      <button class="lang" id="lang"></button>
+      <div class="modes" role="tablist">
+        <button class="on" data-m="calc" data-t="modeCalc"></button>
+        <button data-m="game" data-t="modeGame"></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <svg id="svg" viewBox="0 0 900 900" role="img"></svg>
+      <div class="scale"><span data-t="scaleLow"></span><span class="bar"></span><span data-t="scaleHigh"></span></div>
+      <p class="hint" id="mapHint"></p>
+      <p class="hint" data-t="mapNote"></p>
+    </section>
+
+    <section class="card" id="calc">
+      <div class="names">
+        <input id="nG" maxlength="20" autocomplete="off">
+        <input id="nB" maxlength="20" autocomplete="off">
+      </div>
+      <div class="field"><label for="g"><span data-t="groomAge"></span> <output id="gOut">29</output></label><input type="range" id="g" min="18" max="70" value="29"></div>
+      <div class="field"><label for="b"><span data-t="brideAge"></span> <output id="bOut">26</output></label><input type="range" id="b" min="18" max="70" value="26"></div>
+      <div class="center">
+        <div class="badge" id="emoji">💚</div>
+        <div class="pct" id="pct">0%</div>
+        <div class="bonus" id="bonus"></div>
+        <div class="tier" id="tier"></div>
+        <p class="desc" id="desc"></p>
+        <div class="meter"><span id="meter"></span></div>
+        <div class="tips" id="tip"></div>
+        <div class="row"><button class="btn" id="rand" data-t="random"></button><button class="btn ghost" id="copy" data-t="copy"></button></div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="game">
+      <div id="play">
+        <div class="hud"><span id="round"></span><span id="score"></span></div>
+        <div class="couple">
+          <div class="person"><div class="av" id="gi"></div><div class="n" id="gn"></div><div class="a" id="ga"></div><div data-t="years"></div></div>
+          <div class="heart">💞</div>
+          <div class="person"><div class="av" id="bi" style="background:var(--accent)"></div><div class="n" id="bn"></div><div class="a" id="ba"></div><div data-t="years"></div></div>
+        </div>
+        <h2 class="center" data-t="question"></h2>
+        <p class="hint" style="margin:-6px 0 10px" data-t="lettersCount"></p>
+        <div class="choices" id="choices"></div>
+        <div class="feedback center" id="fb"></div>
+        <div class="row"><button class="btn hidden" id="next"></button></div>
+      </div>
+      <div class="final center hidden" id="final">
+        <h2 data-t="over"></h2>
+        <div class="big" id="finalScore">0</div>
+        <div data-t="outOf"></div>
+        <div class="tier" id="rank"></div>
+        <p class="desc" id="best"></p>
+        <div class="row"><button class="btn" id="again" data-t="again"></button><button class="btn ghost" id="share" data-t="shareScore"></button></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:20px">
+    <h2 data-t="rulesTitle"></h2>
+    <div class="rules" id="rules"></div>
+  </section>
+
+  <footer data-t="footer"></footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= text ================= */
+const I18N={
+en:{title:"Match Map",sub:"Do your ages match? Work it out, or play and guess the verdict.",
+  modeCalc:"🧮 Calculate",modeGame:"🎮 Guess It",langBtn:"عربي",install:"📲 Install app",
+  scaleLow:"Risky",scaleHigh:"Golden match",mapHintCalc:"Tap any square to pick both ages.",mapHintGame:"The couple shows up on the map after you answer.",
+  mapNote:"Map colors show age only; initials then add or take away up to 10 points.",
+  phG:"His name (optional)",phB:"Her name (optional)",groomAge:"His age",brideAge:"Her age",
+  random:"🎲 Random couple",copy:"Copy result",years:"years",question:"What's the map's verdict for this couple?",
+  lettersCount:"Don't forget: their initials affect the score!",over:"Game over!",outOf:"out of 100 points",
+  again:"Play again",shareScore:"Copy my score",rulesTitle:"How do initials count?",
+  footer:"Just for fun 🙂 This is a simplified, made-up scale. Real compatibility comes from respect and understanding, not birth certificates.",
+  axisX:"Her age",axisY:"His age",and:" & ",
+  ageWord:"Age",lettersWord:"Initials",typeNames:"Type both names to see how your initials count ✍️",
+  round:(r)=>`Round ${r} of 10`,points:(p)=>`Points: ${p}`,next:"Next round →",seeFinal:"See final score",
+  right:"🎯 Spot on! +10",close:"👌 So close! +5",miss:"😅 Not this time",
+  best:(b)=>`Your best: ${b} points`,copied:"Copied ✓",copyFail:"Couldn't copy",installed:"Installed ✓",
+  shareTxt:(p,r)=>`I played “Match Map” and scored ${p}/100! ${r}`,
+  resultTxt:(g,b,s,t,l)=>`Match Map\nHim ${g}, her ${b}\nScore: ${s}% — ${t}${l}\n(just for fun)`,
+  ranks:["🏆 Pro matchmaker!","💐 Top-class matchmaker","🙂 A pretty good eye","🎲 Luck wasn't on your side today"],
+  tiers:[["Golden match","Your ages sit right in the sweet spot. Picture-perfect!"],["Good chance","A comfortable age gap. The rest is up to how you treat each other."],
+    ["Needs some effort","Totally possible, just takes a bit more understanding than usual."],["Calculated adventure","A noticeable gap. Adventurers love a challenge!"],
+    ["Love is blind… the map isn't","The map is very pessimistic, but it doesn't know you personally."]],
+  tips:{bigOlderHim:"Big age gap: agree early on lifestyle, energy and priorities.",bigOlderHer:"She's notably older: what matters is harmony, not what people say.",
+    young:"Early start: there's nothing wrong with waiting until study and work settle.",close:"A tiny gap: you share the same generation and memories.",any:"Remember: honest conversation matters more than any number."},
+  lb:{same:"Same initial ✨",fam:"Look-alike letters 👯",adj:"Alphabet neighbors 🏠",near:"Close in the alphabet 🤝",seven:"Lucky number seven 🍀",far:"Opposite ends of the alphabet 🌍",neutral:"Neutral letters 🙂",mixed:"Different alphabets 🌐"},
+  rules:[["✨ Same initial","+10"],["👯 Look-alike letters (b d p q, m n w, u v…)","+6"],["🏠 Next to each other in the alphabet","+5"],["🤝 Two letters or fewer apart","+3"],["🍀 Their alphabet positions add up to a multiple of 7","+4"],["🌍 Opposite ends of the alphabet","−4"]],
+  men:["Adam","Ben","Chris","Daniel","Ethan","Jack","Leo","Liam","Mark","Noah","Omar","Ryan","Sam","Tom","Yusuf","Zack"],
+  women:["Amy","Bella","Chloe","Dana","Emma","Grace","Hannah","Lily","Maya","Mia","Nora","Olivia","Rose","Sara","Yasmin","Zoe"]},
+ar:{title:"خريطة التوافق",sub:"هل يتوافق العمران؟ احسبها بنفسك، أو العب وخمّن حكم الخريطة.",
+  modeCalc:"🧮 احسبها",modeGame:"🎮 خمّن الحكم",langBtn:"English",install:"📲 ثبّت التطبيق",
+  scaleLow:"مغامرة",scaleHigh:"توافق ذهبي",mapHintCalc:"اضغط على أي مربع لتختار العمرين منه.",mapHintGame:"ستظهر مكان الزوجين على الخريطة بعد إجابتك.",
+  mapNote:"ألوان الخريطة للعمر فقط، ثم تضيف الحروف أو تخصم حتى 10 نقاط.",
+  phG:"اسم العريس (اختياري)",phB:"اسم العروس (اختياري)",groomAge:"عمر العريس",brideAge:"عمر العروس",
+  random:"🎲 زوجان عشوائيان",copy:"انسخ النتيجة",years:"سنة",question:"ما حكم الخريطة على هذين الزوجين؟",
+  lettersCount:"لا تنسَ: الحروف الأولى من الاسمين تؤثر في النتيجة!",over:"انتهت اللعبة!",outOf:"من 100 نقطة",
+  again:"العب مرة أخرى",shareScore:"انسخ نتيجتي",rulesTitle:"كيف تؤثر الحروف؟",
+  footer:"للتسلية فقط 🙂 المقياس مبسّط ومن تصميمنا. التوافق الحقيقي يصنعه الاحترام والتفاهم، لا شهادة الميلاد.",
+  axisX:"عمر العروس",axisY:"عمر العريس",and:" و",
+  ageWord:"العمر",lettersWord:"الحروف",typeNames:"اكتب الاسمين لتعرف تأثير الحروف ✍️",
+  round:(r)=>`الجولة ${r} من 10`,points:(p)=>`النقاط: ${p}`,next:"الجولة التالية ←",seeFinal:"شاهد النتيجة النهائية",
+  right:"🎯 إجابة صحيحة! +10",close:"👌 قريبة جداً! +5",miss:"😅 ليست هذه المرة",
+  best:(b)=>`أفضل نتيجة لك: ${b} نقطة`,copied:"تم النسخ ✓",copyFail:"تعذّر النسخ",installed:"تم التثبيت ✓",
+  shareTxt:(p,r)=>`لعبت «خريطة التوافق» وحصلت على ${p} من 100 نقطة! ${r}`,
+  resultTxt:(g,b,s,t,l)=>`خريطة التوافق\nالعريس ${g} سنة، والعروس ${b} سنة\nالنتيجة: ${s}% — ${t}${l}\n(للتسلية فقط)`,
+  ranks:["🏆 خبير توافق محترف!","💐 خاطبة من الطراز الأول","🙂 عين خبيرة… تقريباً","🎲 الحظ لم يكن في صفك اليوم"],
+  tiers:[["توافق ذهبي","العمران في المنطقة المثالية. صورة مثالية!"],["فرصة طيبة","فرق العمر لطيف ومريح. الباقي على حسن العِشرة."],
+    ["يحتاج مجهوداً","ممكن جداً، لكن يحتاج تفاهماً أكثر من المعتاد."],["مغامرة محسوبة","الفرق ملحوظ. المغامرون يحبون التحدي!"],
+    ["الحب أعمى… والخريطة لا","الخريطة متشائمة جداً، لكنها لا تعرفكما شخصياً."]],
+  tips:{bigOlderHim:"فرق العمر كبير: اتفقا مبكراً على شكل الحياة والطاقة والأولويات.",bigOlderHer:"العروس أكبر بفارق واضح: المهم هو الانسجام لا كلام الناس.",
+    young:"البداية مبكرة: لا عيب في الانتظار حتى يستقر التعليم والعمل.",close:"فرق بسيط جداً: تتشاركان نفس الجيل والذكريات تقريباً.",any:"تذكّرا: الحوار الصريح أهم من أي رقم."},
+  lb:{same:"حرف واحد يجمعكما ✨",fam:"حرفان شقيقان في الرسم 👯",adj:"جيران في الأبجدية 🏠",near:"قريبان في الأبجدية 🤝",seven:"رقم الحظ سبعة 🍀",far:"من طرفي الأبجدية 🌍",neutral:"حروف محايدة 🙂",mixed:"أبجديتان مختلفتان 🌐"},
+  rules:[["✨ نفس الحرف","+10"],["👯 حرفان شقيقان في الرسم (ب ت ث، ج ح خ، س ش…)","+6"],["🏠 متجاوران في الأبجدية","+5"],["🤝 بينهما حرفان أو أقل","+3"],["🍀 مجموع ترتيبهما من مضاعفات 7","+4"],["🌍 من طرفي الأبجدية","−4"]],
+  men:["أحمد","محمد","عمر","يوسف","كريم","مصطفى","خالد","حسن","طارق","مازن","سيف","آدم","زياد","هشام","سامح","وليد"],
+  women:["مريم","سارة","نور","هبة","ليلى","ياسمين","فرح","سلمى","منى","رنا","دينا","آية","هند","جنى","ملك","ريم"]}
+};
+let lang="en"; try{const s=localStorage.getItem("mm_lang"); if(s==="ar"||s==="en") lang=s;}catch(e){}
+const T=()=>I18N[lang];
+
+/* ================= scoring ================= */
+const MIN=18,MAX=70,N=MAX-MIN+1;
+const TIERS=[{min:80,emoji:"💚",col:"#2e8b57"},{min:60,emoji:"💛",col:"#a8cf72"},{min:40,emoji:"🧡",col:"#f2c75c"},{min:20,emoji:"😬",col:"#e67e3a"},{min:0,emoji:"🙈",col:"#c0392b"}];
+function score(g,b){const d=g-b;let s=100;
+  if(d>4)s-=(d-4)*5;else if(d<-2)s-=(-d-2)*7;else if(d<0)s-=(-d)*4;
+  const y=Math.min(g,b);if(y<22)s-=(22-y)*6;return Math.max(0,Math.min(100,Math.round(s)));}
+const tierOf=s=>TIERS.findIndex(t=>s>=t.min);
+const ALPHA={ar:{abc:"أبتثجحخدذرزسشصضطظعغفقكلمنهوي",fam:["بتث","جحخ","دذ","رز","سش","صض","طظ","عغ","فق"],far:20},
+             en:{abc:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",fam:["BDPQ","MNW","UV","IJ","CO","SZ"],far:18}};
+function ini(s){s=(s||"").trim();if(!s)return"";let c=s[0];if("إأآا".includes(c))c="أ";if(c==="ى")c="ي";return /[a-z]/i.test(c)?c.toUpperCase():c;}
+function letterBonus(a,b){
+  a=ini(a);b=ini(b);if(!a||!b)return null;
+  const sa=ALPHA.ar.abc.includes(a)?"ar":(ALPHA.en.abc.includes(a)?"en":null);
+  const sb=ALPHA.ar.abc.includes(b)?"ar":(ALPHA.en.abc.includes(b)?"en":null);
+  if(!sa||!sb)return {v:0,k:"neutral"};
+  if(sa!==sb)return {v:0,k:"mixed"};
+  const A=ALPHA[sa],i=A.abc.indexOf(a),j=A.abc.indexOf(b),d=Math.abs(i-j);
+  if(i===j)return {v:10,k:"same"};
+  if(A.fam.some(f=>f.includes(a)&&f.includes(b)))return {v:6,k:"fam"};
+  if(d===1)return {v:5,k:"adj"};
+  if(d<=3)return {v:3,k:"near"};
+  if((i+j)%7===0)return {v:4,k:"seven"};
+  if(d>=A.far)return {v:-4,k:"far"};
+  return {v:0,k:"neutral"};
+}
+function finalScore(g,b,gn,bn){const age=score(g,b),lb=letterBonus(gn,bn);return {age,lb,s:Math.max(0,Math.min(100,age+(lb?lb.v:0)))};}
+const sign=v=>`<b dir="ltr">${v>0?"+":v<0?"−":"±"}${Math.abs(v)}</b>`;
+
+/* ================= map ================= */
+const $=id=>document.getElementById(id);
+const ST=[[0,[192,57,43]],[25,[230,126,58]],[50,[242,199,92]],[75,[168,207,114]],[100,[46,139,87]]];
+function grad(s){for(let i=1;i<ST.length;i++)if(s<=ST[i][0]){const[a,ca]=ST[i-1],[b,cb]=ST[i],t=(s-a)/(b-a);return"rgb("+ca.map((v,j)=>Math.round(v+(cb[j]-v)*t))+")";}}
+const ns="http://www.w3.org/2000/svg",svg=$("svg"),S=15.4,X0=72,Y0=10;
+function el(t,a,txt){const e=document.createElementNS(ns,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;svg.appendChild(e);return e;}
+for(let i=0;i<N;i++)for(let j=0;j<N;j++)
+  el("rect",{x:X0+i*S,y:Y0+(N-1-j)*S,width:S,height:S,fill:grad(score(MIN+j,MIN+i)),stroke:"#fff","stroke-width":.6});
+el("line",{x1:X0,y1:Y0+N*S,x2:X0+N*S,y2:Y0,stroke:"#fff","stroke-width":2,"stroke-dasharray":"6 6",opacity:.9,"pointer-events":"none"});
+const FONT='Poppins, Cairo, sans-serif';
+for(let v=20;v<=70;v+=5){const i=v-MIN;
+  el("text",{x:X0+i*S+S/2,y:Y0+N*S+26,"text-anchor":"middle","font-size":17,fill:"#6a6570","font-family":FONT},v);
+  el("text",{x:X0-10,y:Y0+(N-1-i)*S+S/2+6,"text-anchor":"end","font-size":17,fill:"#6a6570","font-family":FONT},v);}
+const axX=el("text",{x:X0+N*S/2,y:Y0+N*S+58,"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT});
+const axY=el("text",{x:22,y:Y0+N*S/2,"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT,transform:"rotate(-90 22 "+(Y0+N*S/2)+")"});
+const hl=el("rect",{width:S+8,height:S+8,fill:"none",stroke:"#1d1b22","stroke-width":4,rx:4,"pointer-events":"none"});
+const tagBg=el("rect",{rx:12,height:30,fill:"#1d1b22","pointer-events":"none"});
+const tag=el("text",{"font-size":18,"font-weight":800,fill:"#fff","font-family":FONT,"text-anchor":"middle","pointer-events":"none"});
+const vl=el("line",{stroke:"#1d1b22","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.6,"pointer-events":"none"});
+const hz=el("line",{stroke:"#1d1b22","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.6,"pointer-events":"none"});
+let tagText="";
+function mark(g,b,show=true){
+  [hl,vl,hz,tag,tagBg].forEach(e=>e.style.display=show?"":"none");if(!show)return;
+  const x=X0+(b-MIN)*S,y=Y0+(N-1-(g-MIN))*S;
+  hl.setAttribute("x",x-4);hl.setAttribute("y",y-4);
+  vl.setAttribute("x1",x+S/2);vl.setAttribute("x2",x+S/2);vl.setAttribute("y1",y+S);vl.setAttribute("y2",Y0+N*S);
+  hz.setAttribute("x1",X0);hz.setAttribute("x2",x);hz.setAttribute("y1",y+S/2);hz.setAttribute("y2",y+S/2);
+  if(tagText){tag.textContent=tagText;const w=[...tagText].length*13+24,cx=Math.min(Math.max(x+S/2,X0+w/2),X0+N*S-w/2),cy=y>60?y-26:y+S+26;
+    tagBg.setAttribute("width",w);tagBg.setAttribute("x",cx-w/2);tagBg.setAttribute("y",cy-17);tag.setAttribute("x",cx);tag.setAttribute("y",cy+6);}
+  else{tag.style.display="none";tagBg.style.display="none";}
+}
+const pair=(a,b)=>`${a||"?"} ♥ ${b||"?"}`;
+
+/* ================= calculator ================= */
+const gEl=$("g"),bEl=$("b");let lastTier=-1,mode="calc";
+function render(){
+  const g=+gEl.value,b=+bEl.value,ng=$("nG").value.trim(),nb=$("nB").value.trim();
+  const F=finalScore(g,b,ng,nb),s=F.s,ti=tierOf(s),t=TIERS[ti],[tn,td]=T().tiers[ti];
+  const ig=ini(ng),ib=ini(nb);tagText=(ig||ib)?pair(ig,ib):"";
+  $("gOut").textContent=g;$("bOut").textContent=b;mark(g,b);
+  if(ti!==lastTier){const e=$("emoji");e.classList.remove("pop");void e.offsetWidth;e.classList.add("pop");lastTier=ti;}
+  if(ig||ib)$("emoji").innerHTML=`<span class="initials" dir="auto">${ig||"?"}<small>♥</small>${ib||"?"}</span>`;else $("emoji").textContent=t.emoji;
+  $("emoji").style.background=t.col+"33";
+  $("pct").textContent=s+"%";$("pct").style.color=t.col;
+  $("bonus").innerHTML=F.lb?`${T().ageWord} ${F.age}% · ${T().lettersWord} ${sign(F.lb.v)} · ${T().lb[F.lb.k]}`:T().typeNames;
+  $("tier").textContent=(ng&&nb?ng+T().and+nb+": ":"")+tn;
+  $("desc").textContent=td;
+  $("meter").style.width=Math.max(4,s)+"%";$("meter").style.background=t.col;
+  const d=g-b,y=Math.min(g,b),tp=T().tips;
+  $("tip").textContent="💡 "+(d>12?tp.bigOlderHim:d<-8?tp.bigOlderHer:y<22?tp.young:(d>=0&&d<=4)?tp.close:tp.any);
+}
+[gEl,bEl,$("nG"),$("nB")].forEach(e=>e.addEventListener("input",render));
+$("rand").onclick=()=>{gEl.value=20+Math.floor(Math.random()*30);bEl.value=18+Math.floor(Math.random()*30);render();};
+svg.addEventListener("click",e=>{
+  if(mode!=="calc")return;
+  const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+  const i=Math.floor((p.x-X0)/S),j=N-1-Math.floor((p.y-Y0)/S);if(i<0||i>=N||j<0||j>=N)return;
+  bEl.value=MIN+i;gEl.value=MIN+j;render();});
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);}
+async function copyText(x){try{await navigator.clipboard.writeText(x);toast(T().copied);}catch(e){toast(T().copyFail);}}
+$("copy").onclick=()=>{const g=+gEl.value,b=+bEl.value,ng=$("nG").value,nb=$("nB").value,F=finalScore(g,b,ng,nb),tn=T().tiers[tierOf(F.s)][0];
+  const l=F.lb?` (${pair(ini(ng),ini(nb))}: ${F.lb.v>0?"+":""}${F.lb.v})`:"";
+  copyText(T().resultTxt(g,b,F.s,tn,l));};
+
+/* ================= game ================= */
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+let round=0,pts=0,cur=null,answered=false;
+function newCouple(){
+  const want=Math.floor(Math.random()*5);
+  for(let k=0;k<500;k++){const g=MIN+Math.floor(Math.random()*40),b=MIN+Math.floor(Math.random()*40),gi=Math.floor(Math.random()*16),bi=Math.floor(Math.random()*16);
+    const gn=T().men[gi],bn=T().women[bi];if(tierOf(finalScore(g,b,gn,bn).s)===want)return {g,b,gn,bn};}
+  return {g:30,b:27,gn:T().men[0],bn:T().women[0]};
+}
+function drawCouple(){
+  const gn=cur.gn,bn=cur.bn;
+  $("gi").textContent=ini(gn);$("bi").textContent=ini(bn);$("gn").textContent=gn;$("bn").textContent=bn;
+  $("ga").textContent=cur.g;$("ba").textContent=cur.b;tagText=pair(ini(gn),ini(bn));
+  $("round").textContent=T().round(round);$("score").textContent=T().points(pts);
+  $("choices").innerHTML=TIERS.map((t,i)=>`<button class="choice" data-i="${i}" style="background:${t.col}22"><span style="font-size:22px">${t.emoji}</span>${T().tiers[i][0]}</button>`).join("");
+  document.querySelectorAll(".choice").forEach(c=>c.onclick=()=>answer(+c.dataset.i));
+}
+function startGame(){round=0;pts=0;$("final").classList.add("hidden");$("play").classList.remove("hidden");nextRound();}
+function nextRound(){round++;answered=false;cur=newCouple();mark(0,0,false);drawCouple();$("fb").textContent="";$("next").classList.add("hidden");}
+function answer(i){
+  if(answered)return;answered=true;cur.pick=i;showAnswer();
+  const F=finalScore(cur.g,cur.b,cur.gn,cur.bn),diff=Math.abs(i-tierOf(F.s));
+  pts+=diff===0?10:diff===1?5:0;$("score").textContent=T().points(pts);
+}
+function showAnswer(){
+  const gn=cur.gn,bn=cur.bn,F=finalScore(cur.g,cur.b,gn,bn),ti=tierOf(F.s),i=cur.pick,diff=Math.abs(i-ti);
+  document.querySelectorAll(".choice").forEach(c=>{c.disabled=true;const k=+c.dataset.i;if(k===ti)c.classList.add("right");else if(k===i)c.classList.add("wrong");});
+  mark(cur.g,cur.b,true);
+  $("fb").innerHTML=(diff===0?T().right:diff===1?T().close:T().miss)+
+    `<br><span style="font-weight:600;color:var(--muted)">${T().ageWord} ${F.age}% · ${T().lettersWord} ${sign(F.lb.v)} (${T().lb[F.lb.k]}) = ${F.s}% · ${T().tiers[ti][0]}</span>`;
+  const n=$("next");n.textContent=round<10?T().next:T().seeFinal;n.classList.remove("hidden");
+}
+$("next").onclick=()=>{round<10?nextRound():endGame();};
+function endGame(){
+  $("play").classList.add("hidden");$("final").classList.remove("hidden");$("finalScore").textContent=pts;
+  let best=pts;try{best=Math.max(pts,+(localStorage.getItem("tawafuq_best")||0));localStorage.setItem("tawafuq_best",best);}catch(e){}
+  renderFinal(best);
+}
+function renderFinal(best){
+  if(best==null){try{best=+(localStorage.getItem("tawafuq_best")||pts);}catch(e){best=pts;}}
+  $("rank").textContent=T().ranks[pts>=90?0:pts>=70?1:pts>=50?2:3];$("best").textContent=T().best(best);
+}
+$("again").onclick=startGame;
+$("share").onclick=()=>copyText(T().shareTxt(pts,$("rank").textContent));
+
+/* ================= language & modes ================= */
+function applyLang(){
+  document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+  document.title=lang==="ar"?"خريطة التوافق: لعبة الأعمار":"Match Map: The Age Game";
+  document.querySelectorAll("[data-t]").forEach(e=>e.textContent=T()[e.dataset.t]);
+  $("lang").textContent=T().langBtn;$("install").textContent=T().install;
+  $("nG").placeholder=T().phG;$("nB").placeholder=T().phB;
+  axX.textContent=T().axisX;axY.textContent=T().axisY;svg.setAttribute("aria-label",T().title);
+  $("mapHint").textContent=mode==="calc"?T().mapHintCalc:T().mapHintGame;
+  $("rules").innerHTML=T().rules.map(([a,v])=>`<div>${a}: <b dir="ltr">${v}</b></div>`).join("");
+  if(mode==="calc")render();
+  else if(!$("final").classList.contains("hidden"))renderFinal();
+  else if(cur){drawCouple();if(answered)showAnswer();}
+}
+$("lang").onclick=()=>{lang=lang==="en"?"ar":"en";try{localStorage.setItem("mm_lang",lang);}catch(e){}applyLang();};
+document.querySelectorAll(".modes button").forEach(b=>b.onclick=()=>{
+  mode=b.dataset.m;document.querySelectorAll(".modes button").forEach(x=>x.classList.toggle("on",x===b));
+  $("calc").classList.toggle("hidden",mode!=="calc");$("game").classList.toggle("hidden",mode!=="game");
+  $("mapHint").textContent=mode==="calc"?T().mapHintCalc:T().mapHintGame;
+  if(mode==="game")startGame();else render();
+});
+applyLang();
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+let deferred=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;$("install").classList.remove("hidden");});
+$("install").onclick=async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;$("install").classList.add("hidden");};
+window.addEventListener("appinstalled",()=>{$("install").classList.add("hidden");toast(T().installed);});
+</script>
+</body>
+</html>
