@@ -4,31 +4,35 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#faf7f2">
-<meta name="description" content="A fun game that scores how well two ages and two initials match. English and Arabic.">
+<meta name="description" content="A fun game that scores how well two people match by age or by zodiac sign, plus their initials. English and Arabic.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Match Map">
-<title>Match Map: The Age Game</title>
+<title>Match Map: Age & Zodiac Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#faf7f2;--ink:#1d1b22;--muted:#6a6570;--accent:#b0413e;--line:#e7e1d8;--card:#fff}
+  :root{--bg:#faf7f2;--ink:#1d1b22;--muted:#6a6570;--accent:#b0413e;--line:#e7e1d8;--card:#fff;--violet:#5b4b8a}
   *{box-sizing:border-box}
   body{margin:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     -webkit-tap-highlight-color:transparent;background:var(--bg);color:var(--ink);
     font-family:"Poppins","Cairo",system-ui,"Segoe UI",sans-serif;font-size:17px;line-height:1.65}
   html[lang=ar] body{font-family:"Cairo",system-ui,Tahoma,sans-serif}
   .wrap{max-width:1100px;margin:0 auto;padding:22px 16px 48px}
-  header{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
   h1{font-size:clamp(30px,5.5vw,46px);margin:0;line-height:1.2;font-weight:800}
   .sub{color:var(--muted);margin:2px 0 0}
   .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .modes{display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px}
-  .modes button{font:inherit;font-weight:800;font-size:15px;border:0;background:transparent;border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--muted)}
-  .modes button.on{background:var(--ink);color:#fff}
+  .seg{display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px}
+  .seg button{font:inherit;font-weight:800;font-size:15px;border:0;background:transparent;border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--muted)}
+  .seg button.on{background:var(--ink);color:#fff}
+  .basis{display:flex;justify-content:center;margin:0 0 18px}
+  .basis .seg{padding:5px}
+  .basis .seg button{font-size:17px;padding:9px 22px}
+  .basis .seg button.on.z{background:var(--violet)}
   .lang{font:inherit;font-weight:800;font-size:15px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;color:var(--ink)}
   .lang:hover{border-color:var(--ink)}
   .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
@@ -44,6 +48,14 @@
   .field label{display:flex;justify-content:space-between;align-items:baseline;font-weight:600}
   .field output{font-size:28px;font-weight:800;color:var(--accent)}
   input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+  .signs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .signbox label{font-weight:600;display:block;margin-bottom:4px}
+  .signbox select,.signbox input[type=date]{width:100%;font:inherit;font-size:16px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink)}
+  .signbox .sym{font-size:34px;line-height:1.1;color:var(--violet);text-align:center;margin-top:6px}
+  .signbox .el{font-size:13px;color:var(--muted);text-align:center}
+  details.dob{margin-top:10px;font-size:15px}
+  details.dob summary{cursor:pointer;color:var(--violet);font-weight:600}
+  details.dob .signs{margin-top:8px}
   .btn{font:inherit;font-weight:800;font-size:16px;background:var(--ink);color:#fff;border:0;border-radius:999px;padding:9px 20px;cursor:pointer}
   .btn:hover{background:var(--accent)}
   .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
@@ -67,6 +79,7 @@
   .person{background:var(--bg);border-radius:14px;padding:10px 16px;min-width:120px;text-align:center}
   .person .n{font-weight:800;font-size:20px}
   .person .a{font-size:30px;font-weight:800;color:var(--accent);line-height:1.1}
+  .person .a.z{color:var(--violet)}
   .av{width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px}
   .heart{font-size:30px}
   .choices{display:grid;gap:8px}
@@ -77,10 +90,10 @@
   .choice.wrong{opacity:1;border-color:var(--accent)}
   .feedback{min-height:56px;margin-top:10px;font-weight:800}
   .final .big{font-size:56px;font-weight:800;color:var(--accent);line-height:1}
-  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:15px}
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;font-size:15px}
   .hidden{display:none !important}
   footer{margin-top:22px;font-size:14px;color:var(--muted);text-align:center}
-  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;opacity:0;transition:opacity .3s;pointer-events:none}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9}
   .toast.show{opacity:1}
 </style>
 </head>
@@ -94,19 +107,26 @@
     <div class="tools">
       <button class="btn hidden" id="install" style="font-size:14px;padding:6px 14px"></button>
       <button class="lang" id="lang"></button>
-      <div class="modes" role="tablist">
+      <div class="seg" id="modes">
         <button class="on" data-m="calc" data-t="modeCalc"></button>
         <button data-m="game" data-t="modeGame"></button>
       </div>
     </div>
   </header>
 
+  <div class="basis">
+    <div class="seg" id="basis">
+      <button class="on" data-b="age" data-t="byAge"></button>
+      <button class="z" data-b="zodiac" data-t="byZodiac"></button>
+    </div>
+  </div>
+
   <div class="grid">
     <section class="card">
       <svg id="svg" viewBox="0 0 900 900" role="img"></svg>
       <div class="scale"><span data-t="scaleLow"></span><span class="bar"></span><span data-t="scaleHigh"></span></div>
       <p class="hint" id="mapHint"></p>
-      <p class="hint" data-t="mapNote"></p>
+      <p class="hint" id="mapNote"></p>
     </section>
 
     <section class="card" id="calc">
@@ -114,8 +134,23 @@
         <input id="nG" maxlength="20" autocomplete="off">
         <input id="nB" maxlength="20" autocomplete="off">
       </div>
-      <div class="field"><label for="g"><span data-t="groomAge"></span> <output id="gOut">29</output></label><input type="range" id="g" min="18" max="70" value="29"></div>
-      <div class="field"><label for="b"><span data-t="brideAge"></span> <output id="bOut">26</output></label><input type="range" id="b" min="18" max="70" value="26"></div>
+      <div id="ageInputs">
+        <div class="field"><label for="g"><span data-t="groomAge"></span> <output id="gOut">29</output></label><input type="range" id="g" min="18" max="70" value="29"></div>
+        <div class="field"><label for="b"><span data-t="brideAge"></span> <output id="bOut">26</output></label><input type="range" id="b" min="18" max="70" value="26"></div>
+      </div>
+      <div id="zodInputs" class="hidden">
+        <div class="signs">
+          <div class="signbox"><label for="zG" data-t="hisSign"></label><select id="zG"></select><div class="sym" id="zGs"></div><div class="el" id="zGe"></div></div>
+          <div class="signbox"><label for="zB" data-t="herSign"></label><select id="zB"></select><div class="sym" id="zBs"></div><div class="el" id="zBe"></div></div>
+        </div>
+        <details class="dob">
+          <summary data-t="dobAsk"></summary>
+          <div class="signs">
+            <div class="signbox"><label for="dG" data-t="hisDob"></label><input type="date" id="dG"></div>
+            <div class="signbox"><label for="dB" data-t="herDob"></label><input type="date" id="dB"></div>
+          </div>
+        </details>
+      </div>
       <div class="center">
         <div class="badge" id="emoji">💚</div>
         <div class="pct" id="pct">0%</div>
@@ -132,9 +167,9 @@
       <div id="play">
         <div class="hud"><span id="round"></span><span id="score"></span></div>
         <div class="couple">
-          <div class="person"><div class="av" id="gi"></div><div class="n" id="gn"></div><div class="a" id="ga"></div><div data-t="years"></div></div>
+          <div class="person"><div class="av" id="gi"></div><div class="n" id="gn"></div><div class="a" id="ga"></div><div id="gu"></div></div>
           <div class="heart">💞</div>
-          <div class="person"><div class="av" id="bi" style="background:var(--accent)"></div><div class="n" id="bn"></div><div class="a" id="ba"></div><div data-t="years"></div></div>
+          <div class="person"><div class="av" id="bi" style="background:var(--accent)"></div><div class="n" id="bn"></div><div class="a" id="ba"></div><div id="bu"></div></div>
         </div>
         <h2 class="center" data-t="question"></h2>
         <p class="hint" style="margin:-6px 0 10px" data-t="lettersCount"></p>
@@ -153,6 +188,10 @@
     </section>
   </div>
 
+  <section class="card hidden" id="zodRulesCard" style="margin-top:20px">
+    <h2 data-t="zodRulesTitle"></h2>
+    <div class="rules" id="zodRules"></div>
+  </section>
   <section class="card" style="margin-top:20px">
     <h2 data-t="rulesTitle"></h2>
     <div class="rules" id="rules"></div>
@@ -163,56 +202,107 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* ================= zodiac data ================= */
+const SIGNS=[ // [symbol, element index, start month, start day]
+  ["♈",0,3,21],["♉",1,4,20],["♊",2,5,21],["♋",3,6,21],["♌",0,7,23],["♍",1,8,23],
+  ["♎",2,9,23],["♏",3,10,23],["♐",0,11,22],["♑",1,12,22],["♒",2,1,20],["♓",3,2,19]];
+const EL_EMOJI=["🔥","🌍","💨","💧"];
+function signFromDate(m,d){ // returns sign index
+  let idx=9; // Capricorn default (Dec 22 – Jan 19)
+  for(let i=0;i<12;i++){const[,,sm,sd]=SIGNS[i];
+    const nm=SIGNS[(i+1)%12][2],nd=SIGNS[(i+1)%12][3];
+    const after=(m>sm)||(m===sm&&d>=sd), before=(m<nm)||(m===nm&&d<nd);
+    if(sm<nm ? (after&&before) : (after||before)){idx=i;break;}}
+  return idx;
+}
+// relation by distance around the wheel
+const REL={0:"twin",1:"neighbor",2:"friendly",3:"friction",4:"element",5:"odd",6:"opposite"};
+const REL_SCORE={element:95,friendly:85,twin:78,opposite:70,neighbor:45,friction:30,odd:22};
+const relOf=(a,b)=>{const k=Math.abs(a-b)%12;return REL[Math.min(k,12-k)];};
+const zScore=(a,b)=>REL_SCORE[relOf(a,b)];
+
 /* ================= text ================= */
 const I18N={
-en:{title:"Match Map",sub:"Do your ages match? Work it out, or play and guess the verdict.",
+en:{title:"Match Map",sub:"Do you two match? Work it out, or play and guess the verdict.",
   modeCalc:"🧮 Calculate",modeGame:"🎮 Guess It",langBtn:"عربي",install:"📲 Install app",
-  scaleLow:"Risky",scaleHigh:"Golden match",mapHintCalc:"Tap any square to pick both ages.",mapHintGame:"The couple shows up on the map after you answer.",
-  mapNote:"Map colors show age only; initials then add or take away up to 10 points.",
+  byAge:"🎂 By age",byZodiac:"🔮 By zodiac",
+  scaleLow:"Risky",scaleHigh:"Golden match",
+  mapHintCalc:"Tap any square to pick from the map.",mapHintGame:"The couple shows up on the map after you answer.",
+  mapNoteAge:"Map colors show age only; initials then add or take away up to 10 points.",
+  mapNoteZod:"Map colors show signs only; initials then add or take away up to 10 points.",
   phG:"His name (optional)",phB:"Her name (optional)",groomAge:"His age",brideAge:"Her age",
+  hisSign:"His sign",herSign:"Her sign",dobAsk:"Don't know your sign? Enter your birth date",hisDob:"His birth date",herDob:"Her birth date",
+  adultsOnly:"This game is for ages 18+ 🙂",
   random:"🎲 Random couple",copy:"Copy result",years:"years",question:"What's the map's verdict for this couple?",
   lettersCount:"Don't forget: their initials affect the score!",over:"Game over!",outOf:"out of 100 points",
-  again:"Play again",shareScore:"Copy my score",rulesTitle:"How do initials count?",
-  footer:"Just for fun 🙂 This is a simplified, made-up scale. Real compatibility comes from respect and understanding, not birth certificates.",
-  axisX:"Her age",axisY:"His age",and:" & ",
-  ageWord:"Age",lettersWord:"Initials",typeNames:"Type both names to see how your initials count ✍️",
+  again:"Play again",shareScore:"Copy my score",rulesTitle:"How do initials count?",zodRulesTitle:"How do signs match?",
+  footer:"Just for fun 🙂 These scales are simplified and made up, ages and stars alike. Real compatibility comes from respect and understanding.",
+  axisX:"Her age",axisY:"His age",axisXz:"Her sign",axisYz:"His sign",and:" & ",
+  ageWord:"Age",signsWord:"Signs",lettersWord:"Initials",typeNames:"Type both names to see how your initials count ✍️",
   round:(r)=>`Round ${r} of 10`,points:(p)=>`Points: ${p}`,next:"Next round →",seeFinal:"See final score",
   right:"🎯 Spot on! +10",close:"👌 So close! +5",miss:"😅 Not this time",
   best:(b)=>`Your best: ${b} points`,copied:"Copied ✓",copyFail:"Couldn't copy",installed:"Installed ✓",
-  shareTxt:(p,r)=>`I played “Match Map” and scored ${p}/100! ${r}`,
-  resultTxt:(g,b,s,t,l)=>`Match Map\nHim ${g}, her ${b}\nScore: ${s}% — ${t}${l}\n(just for fun)`,
+  shareTxt:(p,r,z)=>`I played “Match Map” ${z?"(zodiac)":"(age)"} and scored ${p}/100! ${r}`,
+  resultAge:(g,b,s,t,l)=>`Match Map 🎂\nHim ${g}, her ${b}\nScore: ${s}% — ${t}${l}\n(just for fun)`,
+  resultZod:(g,b,s,t,l)=>`Match Map 🔮\n${g} ♥ ${b}\nScore: ${s}% — ${t}${l}\n(just for fun)`,
   ranks:["🏆 Pro matchmaker!","💐 Top-class matchmaker","🙂 A pretty good eye","🎲 Luck wasn't on your side today"],
-  tiers:[["Golden match","Your ages sit right in the sweet spot. Picture-perfect!"],["Good chance","A comfortable age gap. The rest is up to how you treat each other."],
-    ["Needs some effort","Totally possible, just takes a bit more understanding than usual."],["Calculated adventure","A noticeable gap. Adventurers love a challenge!"],
+  tiers:[["Golden match","Picture-perfect. The map couldn't be happier!"],["Good chance","A comfortable match. The rest is up to how you treat each other."],
+    ["Needs some effort","Totally possible, just takes a bit more understanding than usual."],["Calculated adventure","A bumpy ride ahead. Adventurers love a challenge!"],
     ["Love is blind… the map isn't","The map is very pessimistic, but it doesn't know you personally."]],
   tips:{bigOlderHim:"Big age gap: agree early on lifestyle, energy and priorities.",bigOlderHer:"She's notably older: what matters is harmony, not what people say.",
     young:"Early start: there's nothing wrong with waiting until study and work settle.",close:"A tiny gap: you share the same generation and memories.",any:"Remember: honest conversation matters more than any number."},
+  signs:["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"],
+  elements:["Fire","Earth","Air","Water"],
+  rel:{element:["Same element","You speak the same language. Things just flow."],friendly:["Friendly elements","Your elements feed each other, like fire and air or earth and water."],
+    twin:["Twin signs","Like looking in a mirror: lots of understanding, and the same blind spots."],opposite:["Opposites attract","Opposite ends of the wheel. Sparks fly, and you complete each other."],
+    neighbor:["Next-door signs","Side by side but wired differently. Curiosity is the key."],friction:["Creative friction","Your elements clash. Expect debates, and growth."],
+    odd:["The odd couple","Very different worlds. It takes patience to meet halfway."]},
+  zTips:{element:"Same element: keep things fresh so comfort doesn't turn into routine.",friendly:"Friendly elements: lean on each other's strengths.",
+    twin:"Twin signs: give each other room to be different.",opposite:"Opposites: celebrate the differences instead of fixing them.",
+    neighbor:"Neighbors: ask questions, you'll be surprised.",friction:"Friction: agree on how you argue before you need to.",odd:"Odd couple: small shared rituals build a big bridge."},
+  zRules:[["🔥 Same element (e.g. Aries & Leo)","95%"],["🤝 Friendly elements: fire & air, earth & water","85%"],["🪞 Same sign","78%"],["🧲 Opposite signs","70%"],["🏠 Next-door signs","45%"],["⚡ Clashing elements","30%"],["🌀 Odd couple (5 signs apart)","22%"]],
   lb:{same:"Same initial ✨",fam:"Look-alike letters 👯",adj:"Alphabet neighbors 🏠",near:"Close in the alphabet 🤝",seven:"Lucky number seven 🍀",far:"Opposite ends of the alphabet 🌍",neutral:"Neutral letters 🙂",mixed:"Different alphabets 🌐"},
   rules:[["✨ Same initial","+10"],["👯 Look-alike letters (b d p q, m n w, u v…)","+6"],["🏠 Next to each other in the alphabet","+5"],["🤝 Two letters or fewer apart","+3"],["🍀 Their alphabet positions add up to a multiple of 7","+4"],["🌍 Opposite ends of the alphabet","−4"]],
   men:["Adam","Ben","Chris","Daniel","Ethan","Jack","Leo","Liam","Mark","Noah","Omar","Ryan","Sam","Tom","Yusuf","Zack"],
   women:["Amy","Bella","Chloe","Dana","Emma","Grace","Hannah","Lily","Maya","Mia","Nora","Olivia","Rose","Sara","Yasmin","Zoe"]},
-ar:{title:"خريطة التوافق",sub:"هل يتوافق العمران؟ احسبها بنفسك، أو العب وخمّن حكم الخريطة.",
+ar:{title:"خريطة التوافق",sub:"هل أنتما متوافقان؟ احسبها بنفسك، أو العب وخمّن حكم الخريطة.",
   modeCalc:"🧮 احسبها",modeGame:"🎮 خمّن الحكم",langBtn:"English",install:"📲 ثبّت التطبيق",
-  scaleLow:"مغامرة",scaleHigh:"توافق ذهبي",mapHintCalc:"اضغط على أي مربع لتختار العمرين منه.",mapHintGame:"ستظهر مكان الزوجين على الخريطة بعد إجابتك.",
-  mapNote:"ألوان الخريطة للعمر فقط، ثم تضيف الحروف أو تخصم حتى 10 نقاط.",
+  byAge:"🎂 حسب العمر",byZodiac:"🔮 حسب البرج",
+  scaleLow:"مغامرة",scaleHigh:"توافق ذهبي",
+  mapHintCalc:"اضغط على أي مربع لتختار منه مباشرة.",mapHintGame:"ستظهر مكان الزوجين على الخريطة بعد إجابتك.",
+  mapNoteAge:"ألوان الخريطة للعمر فقط، ثم تضيف الحروف أو تخصم حتى 10 نقاط.",
+  mapNoteZod:"ألوان الخريطة للأبراج فقط، ثم تضيف الحروف أو تخصم حتى 10 نقاط.",
   phG:"اسم العريس (اختياري)",phB:"اسم العروس (اختياري)",groomAge:"عمر العريس",brideAge:"عمر العروس",
+  hisSign:"برج العريس",herSign:"برج العروس",dobAsk:"لا تعرف برجك؟ أدخل تاريخ الميلاد",hisDob:"تاريخ ميلاد العريس",herDob:"تاريخ ميلاد العروس",
+  adultsOnly:"هذه اللعبة لمن هم 18 سنة فأكثر 🙂",
   random:"🎲 زوجان عشوائيان",copy:"انسخ النتيجة",years:"سنة",question:"ما حكم الخريطة على هذين الزوجين؟",
   lettersCount:"لا تنسَ: الحروف الأولى من الاسمين تؤثر في النتيجة!",over:"انتهت اللعبة!",outOf:"من 100 نقطة",
-  again:"العب مرة أخرى",shareScore:"انسخ نتيجتي",rulesTitle:"كيف تؤثر الحروف؟",
-  footer:"للتسلية فقط 🙂 المقياس مبسّط ومن تصميمنا. التوافق الحقيقي يصنعه الاحترام والتفاهم، لا شهادة الميلاد.",
-  axisX:"عمر العروس",axisY:"عمر العريس",and:" و",
-  ageWord:"العمر",lettersWord:"الحروف",typeNames:"اكتب الاسمين لتعرف تأثير الحروف ✍️",
+  again:"العب مرة أخرى",shareScore:"انسخ نتيجتي",rulesTitle:"كيف تؤثر الحروف؟",zodRulesTitle:"كيف تتوافق الأبراج؟",
+  footer:"للتسلية فقط 🙂 مقاييس العمر والأبراج هنا مبسّطة ومن تصميمنا. التوافق الحقيقي يصنعه الاحترام والتفاهم.",
+  axisX:"عمر العروس",axisY:"عمر العريس",axisXz:"برج العروس",axisYz:"برج العريس",and:" و",
+  ageWord:"العمر",signsWord:"الأبراج",lettersWord:"الحروف",typeNames:"اكتب الاسمين لتعرف تأثير الحروف ✍️",
   round:(r)=>`الجولة ${r} من 10`,points:(p)=>`النقاط: ${p}`,next:"الجولة التالية ←",seeFinal:"شاهد النتيجة النهائية",
   right:"🎯 إجابة صحيحة! +10",close:"👌 قريبة جداً! +5",miss:"😅 ليست هذه المرة",
   best:(b)=>`أفضل نتيجة لك: ${b} نقطة`,copied:"تم النسخ ✓",copyFail:"تعذّر النسخ",installed:"تم التثبيت ✓",
-  shareTxt:(p,r)=>`لعبت «خريطة التوافق» وحصلت على ${p} من 100 نقطة! ${r}`,
-  resultTxt:(g,b,s,t,l)=>`خريطة التوافق\nالعريس ${g} سنة، والعروس ${b} سنة\nالنتيجة: ${s}% — ${t}${l}\n(للتسلية فقط)`,
+  shareTxt:(p,r,z)=>`لعبت «خريطة التوافق» ${z?"(الأبراج)":"(العمر)"} وحصلت على ${p} من 100 نقطة! ${r}`,
+  resultAge:(g,b,s,t,l)=>`خريطة التوافق 🎂\nالعريس ${g} سنة، والعروس ${b} سنة\nالنتيجة: ${s}% — ${t}${l}\n(للتسلية فقط)`,
+  resultZod:(g,b,s,t,l)=>`خريطة التوافق 🔮\n${g} ♥ ${b}\nالنتيجة: ${s}% — ${t}${l}\n(للتسلية فقط)`,
   ranks:["🏆 خبير توافق محترف!","💐 خاطبة من الطراز الأول","🙂 عين خبيرة… تقريباً","🎲 الحظ لم يكن في صفك اليوم"],
-  tiers:[["توافق ذهبي","العمران في المنطقة المثالية. صورة مثالية!"],["فرصة طيبة","فرق العمر لطيف ومريح. الباقي على حسن العِشرة."],
-    ["يحتاج مجهوداً","ممكن جداً، لكن يحتاج تفاهماً أكثر من المعتاد."],["مغامرة محسوبة","الفرق ملحوظ. المغامرون يحبون التحدي!"],
+  tiers:[["توافق ذهبي","صورة مثالية. الخريطة في قمة سعادتها!"],["فرصة طيبة","توافق مريح. الباقي على حسن العِشرة."],
+    ["يحتاج مجهوداً","ممكن جداً، لكن يحتاج تفاهماً أكثر من المعتاد."],["مغامرة محسوبة","الطريق فيه مطبات. المغامرون يحبون التحدي!"],
     ["الحب أعمى… والخريطة لا","الخريطة متشائمة جداً، لكنها لا تعرفكما شخصياً."]],
   tips:{bigOlderHim:"فرق العمر كبير: اتفقا مبكراً على شكل الحياة والطاقة والأولويات.",bigOlderHer:"العروس أكبر بفارق واضح: المهم هو الانسجام لا كلام الناس.",
     young:"البداية مبكرة: لا عيب في الانتظار حتى يستقر التعليم والعمل.",close:"فرق بسيط جداً: تتشاركان نفس الجيل والذكريات تقريباً.",any:"تذكّرا: الحوار الصريح أهم من أي رقم."},
+  signs:["الحمل","الثور","الجوزاء","السرطان","الأسد","العذراء","الميزان","العقرب","القوس","الجدي","الدلو","الحوت"],
+  elements:["نار","تراب","هواء","ماء"],
+  rel:{element:["نفس العنصر","تتكلمان نفس اللغة، والأمور تمشي بسلاسة."],friendly:["عنصران صديقان","كل عنصر يغذّي الآخر، كالنار مع الهواء أو التراب مع الماء."],
+    twin:["برجان توأمان","كأنكما أمام مرآة: تفاهم كبير، ونفس نقاط الضعف أيضاً."],opposite:["الأضداد تتجاذب","على طرفي الدائرة: شرارة قوية، وكل منكما يكمّل الآخر."],
+    neighbor:["برجان جاران","متجاوران لكن مختلفان في الطباع. الفضول هو المفتاح."],friction:["احتكاك مثمر","عنصراكما يتصادمان: نقاشات كثيرة، ونضج أكثر."],
+    odd:["الثنائي الغريب","عالمان مختلفان تماماً. يحتاج صبراً للالتقاء في المنتصف."]},
+  zTips:{element:"نفس العنصر: جدّدا حياتكما حتى لا تتحول الراحة إلى روتين.",friendly:"عنصران صديقان: استفيدا من نقاط قوة كل منكما.",
+    twin:"برجان توأمان: اتركا مساحة ليكون كل منكما مختلفاً.",opposite:"الأضداد: احتفلا بالاختلاف بدل محاولة تغييره.",
+    neighbor:"جاران: اسألا بعضكما كثيراً، ستندهشان.",friction:"احتكاك: اتفقا على طريقة الخلاف قبل أن تحتاجاها.",odd:"ثنائي غريب: عادات صغيرة مشتركة تبني جسراً كبيراً."},
+  zRules:[["🔥 نفس العنصر (مثل الحمل والأسد)","95%"],["🤝 عنصران صديقان: نار وهواء، تراب وماء","85%"],["🪞 نفس البرج","78%"],["🧲 برجان متقابلان","70%"],["🏠 برجان جاران","45%"],["⚡ عنصران متصادمان","30%"],["🌀 ثنائي غريب (بينهما 5 أبراج)","22%"]],
   lb:{same:"حرف واحد يجمعكما ✨",fam:"حرفان شقيقان في الرسم 👯",adj:"جيران في الأبجدية 🏠",near:"قريبان في الأبجدية 🤝",seven:"رقم الحظ سبعة 🍀",far:"من طرفي الأبجدية 🌍",neutral:"حروف محايدة 🙂",mixed:"أبجديتان مختلفتان 🌐"},
   rules:[["✨ نفس الحرف","+10"],["👯 حرفان شقيقان في الرسم (ب ت ث، ج ح خ، س ش…)","+6"],["🏠 متجاوران في الأبجدية","+5"],["🤝 بينهما حرفان أو أقل","+3"],["🍀 مجموع ترتيبهما من مضاعفات 7","+4"],["🌍 من طرفي الأبجدية","−4"]],
   men:["أحمد","محمد","عمر","يوسف","كريم","مصطفى","خالد","حسن","طارق","مازن","سيف","آدم","زياد","هشام","سامح","وليد"],
@@ -222,7 +312,7 @@ let lang="en"; try{const s=localStorage.getItem("mm_lang"); if(s==="ar"||s==="en
 const T=()=>I18N[lang];
 
 /* ================= scoring ================= */
-const MIN=18,MAX=70,N=MAX-MIN+1;
+const MIN=18,MAX=70,NA=MAX-MIN+1;
 const TIERS=[{min:80,emoji:"💚",col:"#2e8b57"},{min:60,emoji:"💛",col:"#a8cf72"},{min:40,emoji:"🧡",col:"#f2c75c"},{min:20,emoji:"😬",col:"#e67e3a"},{min:0,emoji:"🙈",col:"#c0392b"}];
 function score(g,b){const d=g-b;let s=100;
   if(d>4)s-=(d-4)*5;else if(d<-2)s-=(-d-2)*7;else if(d<0)s-=(-d)*4;
@@ -246,138 +336,209 @@ function letterBonus(a,b){
   if(d>=A.far)return {v:-4,k:"far"};
   return {v:0,k:"neutral"};
 }
-function finalScore(g,b,gn,bn){const age=score(g,b),lb=letterBonus(gn,bn);return {age,lb,s:Math.max(0,Math.min(100,age+(lb?lb.v:0)))};}
+// x = his value (age or sign index), y = her value
+function baseScore(x,y){return basis==="age"?score(x,y):zScore(x,y);}
+function finalScore(x,y,gn,bn){const base=baseScore(x,y),lb=letterBonus(gn,bn);return {base,lb,s:Math.max(0,Math.min(100,base+(lb?lb.v:0)))};}
 const sign=v=>`<b dir="ltr">${v>0?"+":v<0?"−":"±"}${Math.abs(v)}</b>`;
+const signLabel=i=>`${SIGNS[i][0]} ${T().signs[i]}`;
 
 /* ================= map ================= */
 const $=id=>document.getElementById(id);
 const ST=[[0,[192,57,43]],[25,[230,126,58]],[50,[242,199,92]],[75,[168,207,114]],[100,[46,139,87]]];
 function grad(s){for(let i=1;i<ST.length;i++)if(s<=ST[i][0]){const[a,ca]=ST[i-1],[b,cb]=ST[i],t=(s-a)/(b-a);return"rgb("+ca.map((v,j)=>Math.round(v+(cb[j]-v)*t))+")";}}
-const ns="http://www.w3.org/2000/svg",svg=$("svg"),S=15.4,X0=72,Y0=10;
+const ns="http://www.w3.org/2000/svg",svg=$("svg"),FONT='Poppins, Cairo, sans-serif';
+let G={}; // geometry of current map
+let hl,tagBg,tag,vl,hz,axX,axY,tagText="";
 function el(t,a,txt){const e=document.createElementNS(ns,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;svg.appendChild(e);return e;}
-for(let i=0;i<N;i++)for(let j=0;j<N;j++)
-  el("rect",{x:X0+i*S,y:Y0+(N-1-j)*S,width:S,height:S,fill:grad(score(MIN+j,MIN+i)),stroke:"#fff","stroke-width":.6});
-el("line",{x1:X0,y1:Y0+N*S,x2:X0+N*S,y2:Y0,stroke:"#fff","stroke-width":2,"stroke-dasharray":"6 6",opacity:.9,"pointer-events":"none"});
-const FONT='Poppins, Cairo, sans-serif';
-for(let v=20;v<=70;v+=5){const i=v-MIN;
-  el("text",{x:X0+i*S+S/2,y:Y0+N*S+26,"text-anchor":"middle","font-size":17,fill:"#6a6570","font-family":FONT},v);
-  el("text",{x:X0-10,y:Y0+(N-1-i)*S+S/2+6,"text-anchor":"end","font-size":17,fill:"#6a6570","font-family":FONT},v);}
-const axX=el("text",{x:X0+N*S/2,y:Y0+N*S+58,"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT});
-const axY=el("text",{x:22,y:Y0+N*S/2,"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT,transform:"rotate(-90 22 "+(Y0+N*S/2)+")"});
-const hl=el("rect",{width:S+8,height:S+8,fill:"none",stroke:"#1d1b22","stroke-width":4,rx:4,"pointer-events":"none"});
-const tagBg=el("rect",{rx:12,height:30,fill:"#1d1b22","pointer-events":"none"});
-const tag=el("text",{"font-size":18,"font-weight":800,fill:"#fff","font-family":FONT,"text-anchor":"middle","pointer-events":"none"});
-const vl=el("line",{stroke:"#1d1b22","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.6,"pointer-events":"none"});
-const hz=el("line",{stroke:"#1d1b22","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.6,"pointer-events":"none"});
-let tagText="";
-function mark(g,b,show=true){
+function drawMap(){
+  svg.innerHTML="";
+  if(basis==="age"){
+    G={N:NA,S:15.4,X0:72,Y0:10,min:MIN};
+    for(let i=0;i<G.N;i++)for(let j=0;j<G.N;j++)
+      el("rect",{x:G.X0+i*G.S,y:G.Y0+(G.N-1-j)*G.S,width:G.S,height:G.S,fill:grad(score(MIN+j,MIN+i)),stroke:"#fff","stroke-width":.6});
+    el("line",{x1:G.X0,y1:G.Y0+G.N*G.S,x2:G.X0+G.N*G.S,y2:G.Y0,stroke:"#fff","stroke-width":2,"stroke-dasharray":"6 6",opacity:.9,"pointer-events":"none"});
+    for(let v=20;v<=70;v+=5){const i=v-MIN;
+      el("text",{x:G.X0+i*G.S+G.S/2,y:G.Y0+G.N*G.S+26,"text-anchor":"middle","font-size":17,fill:"#6a6570","font-family":FONT},v);
+      el("text",{x:G.X0-10,y:G.Y0+(G.N-1-i)*G.S+G.S/2+6,"text-anchor":"end","font-size":17,fill:"#6a6570","font-family":FONT},v);}
+  }else{
+    G={N:12,S:62,X0:104,Y0:14,min:0};
+    for(let i=0;i<12;i++)for(let j=0;j<12;j++){
+      const s=zScore(j,i);
+      el("rect",{x:G.X0+i*G.S,y:G.Y0+(11-j)*G.S,width:G.S,height:G.S,fill:grad(s),stroke:"#fff","stroke-width":2,rx:6});
+      el("text",{x:G.X0+i*G.S+G.S/2,y:G.Y0+(11-j)*G.S+G.S/2+6,"text-anchor":"middle","font-size":15,"font-weight":600,fill:"#fff","fill-opacity":.85,"font-family":FONT,"pointer-events":"none"},s);}
+    for(let i=0;i<12;i++){
+      el("text",{x:G.X0+i*G.S+G.S/2,y:G.Y0+12*G.S+34,"text-anchor":"middle","font-size":28,fill:"#5b4b8a","font-family":"sans-serif"},SIGNS[i][0]);
+      el("text",{x:G.X0-14,y:G.Y0+(11-i)*G.S+G.S/2+10,"text-anchor":"end","font-size":28,fill:"#5b4b8a","font-family":"sans-serif"},SIGNS[i][0]);}
+  }
+  const span=G.N*G.S;
+  axX=el("text",{x:G.X0+span/2,y:G.Y0+span+(basis==="age"?58:72),"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT});
+  axY=el("text",{x:22,y:G.Y0+span/2,"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT,transform:"rotate(-90 22 "+(G.Y0+span/2)+")"});
+  axX.textContent=basis==="age"?T().axisX:T().axisXz;axY.textContent=basis==="age"?T().axisY:T().axisYz;
+  hl=el("rect",{width:G.S+8,height:G.S+8,fill:"none",stroke:"#1d1b22","stroke-width":4,rx:basis==="age"?4:9,"pointer-events":"none"});
+  tagBg=el("rect",{rx:12,height:30,fill:"#1d1b22","pointer-events":"none"});
+  tag=el("text",{"font-size":18,"font-weight":800,fill:"#fff","font-family":FONT,"text-anchor":"middle","pointer-events":"none"});
+  vl=el("line",{stroke:"#1d1b22","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.6,"pointer-events":"none"});
+  hz=el("line",{stroke:"#1d1b22","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.6,"pointer-events":"none"});
+  [hl,vl,hz,tag,tagBg].forEach(e=>e.style.display="none");
+}
+function mark(gv,bv,show=true){ // gv = his value, bv = her value
   [hl,vl,hz,tag,tagBg].forEach(e=>e.style.display=show?"":"none");if(!show)return;
-  const x=X0+(b-MIN)*S,y=Y0+(N-1-(g-MIN))*S;
+  const S=G.S,x=G.X0+(bv-G.min)*S,y=G.Y0+(G.N-1-(gv-G.min))*S;
   hl.setAttribute("x",x-4);hl.setAttribute("y",y-4);
-  vl.setAttribute("x1",x+S/2);vl.setAttribute("x2",x+S/2);vl.setAttribute("y1",y+S);vl.setAttribute("y2",Y0+N*S);
-  hz.setAttribute("x1",X0);hz.setAttribute("x2",x);hz.setAttribute("y1",y+S/2);hz.setAttribute("y2",y+S/2);
-  if(tagText){tag.textContent=tagText;const w=[...tagText].length*13+24,cx=Math.min(Math.max(x+S/2,X0+w/2),X0+N*S-w/2),cy=y>60?y-26:y+S+26;
+  vl.setAttribute("x1",x+S/2);vl.setAttribute("x2",x+S/2);vl.setAttribute("y1",y+S);vl.setAttribute("y2",G.Y0+G.N*S);
+  hz.setAttribute("x1",G.X0);hz.setAttribute("x2",x);hz.setAttribute("y1",y+S/2);hz.setAttribute("y2",y+S/2);
+  if(tagText){tag.textContent=tagText;const w=[...tagText].length*13+24,cx=Math.min(Math.max(x+S/2,G.X0+w/2),G.X0+G.N*S-w/2),cy=y>60?y-26:y+S+26;
     tagBg.setAttribute("width",w);tagBg.setAttribute("x",cx-w/2);tagBg.setAttribute("y",cy-17);tag.setAttribute("x",cx);tag.setAttribute("y",cy+6);}
   else{tag.style.display="none";tagBg.style.display="none";}
 }
 const pair=(a,b)=>`${a||"?"} ♥ ${b||"?"}`;
 
 /* ================= calculator ================= */
-const gEl=$("g"),bEl=$("b");let lastTier=-1,mode="calc";
+const gEl=$("g"),bEl=$("b"),zG=$("zG"),zB=$("zB");let lastTier=-1,mode="calc",basis="age";
+function curVals(){return basis==="age"?[+gEl.value,+bEl.value]:[+zG.value,+zB.value];}
 function render(){
-  const g=+gEl.value,b=+bEl.value,ng=$("nG").value.trim(),nb=$("nB").value.trim();
-  const F=finalScore(g,b,ng,nb),s=F.s,ti=tierOf(s),t=TIERS[ti],[tn,td]=T().tiers[ti];
+  const [x,y]=curVals(),ng=$("nG").value.trim(),nb=$("nB").value.trim();
+  const F=finalScore(x,y,ng,nb),s=F.s,ti=tierOf(s),t=TIERS[ti],[tn,td]=T().tiers[ti];
   const ig=ini(ng),ib=ini(nb);tagText=(ig||ib)?pair(ig,ib):"";
-  $("gOut").textContent=g;$("bOut").textContent=b;mark(g,b);
+  if(basis==="age"){$("gOut").textContent=x;$("bOut").textContent=y;}
+  else{[["zG",x],["zB",y]].forEach(([id,v])=>{$(id+"s").textContent=SIGNS[v][0];$(id+"e").textContent=EL_EMOJI[SIGNS[v][1]]+" "+T().elements[SIGNS[v][1]];});}
+  mark(x,y);
   if(ti!==lastTier){const e=$("emoji");e.classList.remove("pop");void e.offsetWidth;e.classList.add("pop");lastTier=ti;}
-  if(ig||ib)$("emoji").innerHTML=`<span class="initials" dir="auto">${ig||"?"}<small>♥</small>${ib||"?"}</span>`;else $("emoji").textContent=t.emoji;
+  if(ig||ib)$("emoji").innerHTML=`<span class="initials" dir="auto">${ig||"?"}<small>♥</small>${ib||"?"}</span>`;
+  else $("emoji").textContent=basis==="age"?t.emoji:`${SIGNS[x][0]}${SIGNS[y][0]}`;
+  $("emoji").style.fontSize=(!(ig||ib)&&basis==="zodiac")?"40px":"";
   $("emoji").style.background=t.col+"33";
   $("pct").textContent=s+"%";$("pct").style.color=t.col;
-  $("bonus").innerHTML=F.lb?`${T().ageWord} ${F.age}% · ${T().lettersWord} ${sign(F.lb.v)} · ${T().lb[F.lb.k]}`:T().typeNames;
-  $("tier").textContent=(ng&&nb?ng+T().and+nb+": ":"")+tn;
-  $("desc").textContent=td;
+  const baseW=basis==="age"?T().ageWord:T().signsWord;
+  $("bonus").innerHTML=F.lb?`${baseW} ${F.base}% · ${T().lettersWord} ${sign(F.lb.v)} · ${T().lb[F.lb.k]}`:T().typeNames;
+  const who=(ng&&nb?ng+T().and+nb+": ":"");
+  if(basis==="age"){
+    $("tier").textContent=who+tn;$("desc").textContent=td;
+    const d=x-y,yy=Math.min(x,y),tp=T().tips;
+    $("tip").textContent="💡 "+(d>12?tp.bigOlderHim:d<-8?tp.bigOlderHer:yy<22?tp.young:(d>=0&&d<=4)?tp.close:tp.any);
+  }else{
+    const r=relOf(x,y),[rn,rd]=T().rel[r];
+    $("tier").textContent=who+tn;$("desc").innerHTML=`<b>${signLabel(x)} ♥ ${signLabel(y)}</b><br>${rn}: ${rd}`;
+    $("tip").textContent="💡 "+T().zTips[r];
+  }
   $("meter").style.width=Math.max(4,s)+"%";$("meter").style.background=t.col;
-  const d=g-b,y=Math.min(g,b),tp=T().tips;
-  $("tip").textContent="💡 "+(d>12?tp.bigOlderHim:d<-8?tp.bigOlderHer:y<22?tp.young:(d>=0&&d<=4)?tp.close:tp.any);
 }
-[gEl,bEl,$("nG"),$("nB")].forEach(e=>e.addEventListener("input",render));
-$("rand").onclick=()=>{gEl.value=20+Math.floor(Math.random()*30);bEl.value=18+Math.floor(Math.random()*30);render();};
+[gEl,bEl,zG,zB,$("nG"),$("nB")].forEach(e=>e.addEventListener("input",render));
+function fromDob(inp,sel){
+  const v=inp.value;if(!v)return;const [Y,M,D]=v.split("-").map(Number);
+  const now=new Date();let age=now.getFullYear()-Y;if(now.getMonth()+1<M||(now.getMonth()+1===M&&now.getDate()<D))age--;
+  if(age<18){toast(T().adultsOnly);inp.value="";return;}
+  sel.value=String(signFromDate(M,D));render();
+}
+$("dG").addEventListener("change",()=>fromDob($("dG"),zG));
+$("dB").addEventListener("change",()=>fromDob($("dB"),zB));
+(function setDateMax(){const d=new Date();d.setFullYear(d.getFullYear()-18);const s=d.toISOString().slice(0,10);$("dG").max=s;$("dB").max=s;$("dG").min="1920-01-01";$("dB").min="1920-01-01";})();
+$("rand").onclick=()=>{
+  if(basis==="age"){gEl.value=20+Math.floor(Math.random()*30);bEl.value=18+Math.floor(Math.random()*30);}
+  else{zG.value=Math.floor(Math.random()*12);zB.value=Math.floor(Math.random()*12);}
+  render();};
 svg.addEventListener("click",e=>{
   if(mode!=="calc")return;
   const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());
-  const i=Math.floor((p.x-X0)/S),j=N-1-Math.floor((p.y-Y0)/S);if(i<0||i>=N||j<0||j>=N)return;
-  bEl.value=MIN+i;gEl.value=MIN+j;render();});
-function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);}
+  const i=Math.floor((p.x-G.X0)/G.S),j=G.N-1-Math.floor((p.y-G.Y0)/G.S);if(i<0||i>=G.N||j<0||j>=G.N)return;
+  if(basis==="age"){bEl.value=MIN+i;gEl.value=MIN+j;}else{zB.value=i;zG.value=j;}
+  render();});
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
 async function copyText(x){try{await navigator.clipboard.writeText(x);toast(T().copied);}catch(e){toast(T().copyFail);}}
-$("copy").onclick=()=>{const g=+gEl.value,b=+bEl.value,ng=$("nG").value,nb=$("nB").value,F=finalScore(g,b,ng,nb),tn=T().tiers[tierOf(F.s)][0];
+$("copy").onclick=()=>{const [x,y]=curVals(),ng=$("nG").value,nb=$("nB").value,F=finalScore(x,y,ng,nb),tn=T().tiers[tierOf(F.s)][0];
   const l=F.lb?` (${pair(ini(ng),ini(nb))}: ${F.lb.v>0?"+":""}${F.lb.v})`:"";
-  copyText(T().resultTxt(g,b,F.s,tn,l));};
+  copyText(basis==="age"?T().resultAge(x,y,F.s,tn,l):T().resultZod(signLabel(x),signLabel(y),F.s,tn,l));};
 
 /* ================= game ================= */
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 let round=0,pts=0,cur=null,answered=false;
 function newCouple(){
   const want=Math.floor(Math.random()*5);
-  for(let k=0;k<500;k++){const g=MIN+Math.floor(Math.random()*40),b=MIN+Math.floor(Math.random()*40),gi=Math.floor(Math.random()*16),bi=Math.floor(Math.random()*16);
-    const gn=T().men[gi],bn=T().women[bi];if(tierOf(finalScore(g,b,gn,bn).s)===want)return {g,b,gn,bn};}
-  return {g:30,b:27,gn:T().men[0],bn:T().women[0]};
+  for(let k=0;k<800;k++){
+    const x=basis==="age"?MIN+Math.floor(Math.random()*40):Math.floor(Math.random()*12);
+    const y=basis==="age"?MIN+Math.floor(Math.random()*40):Math.floor(Math.random()*12);
+    const gn=pick(T().men),bn=pick(T().women);
+    if(tierOf(finalScore(x,y,gn,bn).s)===want)return {x,y,gn,bn};}
+  return {x:basis==="age"?30:0,y:basis==="age"?27:4,gn:T().men[0],bn:T().women[0]};
 }
 function drawCouple(){
-  const gn=cur.gn,bn=cur.bn;
+  const {gn,bn,x,y}=cur;
   $("gi").textContent=ini(gn);$("bi").textContent=ini(bn);$("gn").textContent=gn;$("bn").textContent=bn;
-  $("ga").textContent=cur.g;$("ba").textContent=cur.b;tagText=pair(ini(gn),ini(bn));
+  const z=basis==="zodiac";
+  $("ga").textContent=z?SIGNS[x][0]:x;$("ba").textContent=z?SIGNS[y][0]:y;
+  $("ga").classList.toggle("z",z);$("ba").classList.toggle("z",z);
+  $("gu").textContent=z?T().signs[x]:T().years;$("bu").textContent=z?T().signs[y]:T().years;
+  tagText=pair(ini(gn),ini(bn));
   $("round").textContent=T().round(round);$("score").textContent=T().points(pts);
   $("choices").innerHTML=TIERS.map((t,i)=>`<button class="choice" data-i="${i}" style="background:${t.col}22"><span style="font-size:22px">${t.emoji}</span>${T().tiers[i][0]}</button>`).join("");
   document.querySelectorAll(".choice").forEach(c=>c.onclick=()=>answer(+c.dataset.i));
 }
-function startGame(){round=0;pts=0;$("final").classList.add("hidden");$("play").classList.remove("hidden");nextRound();}
+function startGame(){round=0;pts=0;cur=null;$("final").classList.add("hidden");$("play").classList.remove("hidden");nextRound();}
 function nextRound(){round++;answered=false;cur=newCouple();mark(0,0,false);drawCouple();$("fb").textContent="";$("next").classList.add("hidden");}
 function answer(i){
-  if(answered)return;answered=true;cur.pick=i;showAnswer();
-  const F=finalScore(cur.g,cur.b,cur.gn,cur.bn),diff=Math.abs(i-tierOf(F.s));
-  pts+=diff===0?10:diff===1?5:0;$("score").textContent=T().points(pts);
+  if(answered)return;answered=true;cur.pick=i;
+  const F=finalScore(cur.x,cur.y,cur.gn,cur.bn),diff=Math.abs(i-tierOf(F.s));
+  pts+=diff===0?10:diff===1?5:0;$("score").textContent=T().points(pts);showAnswer();
 }
 function showAnswer(){
-  const gn=cur.gn,bn=cur.bn,F=finalScore(cur.g,cur.b,gn,bn),ti=tierOf(F.s),i=cur.pick,diff=Math.abs(i-ti);
+  const F=finalScore(cur.x,cur.y,cur.gn,cur.bn),ti=tierOf(F.s),i=cur.pick,diff=Math.abs(i-ti);
   document.querySelectorAll(".choice").forEach(c=>{c.disabled=true;const k=+c.dataset.i;if(k===ti)c.classList.add("right");else if(k===i)c.classList.add("wrong");});
-  mark(cur.g,cur.b,true);
+  mark(cur.x,cur.y,true);
+  const baseW=basis==="age"?T().ageWord:`${T().signsWord} (${T().rel[relOf(cur.x,cur.y)][0]})`;
   $("fb").innerHTML=(diff===0?T().right:diff===1?T().close:T().miss)+
-    `<br><span style="font-weight:600;color:var(--muted)">${T().ageWord} ${F.age}% · ${T().lettersWord} ${sign(F.lb.v)} (${T().lb[F.lb.k]}) = ${F.s}% · ${T().tiers[ti][0]}</span>`;
+    `<br><span style="font-weight:600;color:var(--muted)">${baseW} ${F.base}% · ${T().lettersWord} ${sign(F.lb.v)} (${T().lb[F.lb.k]}) = ${F.s}% · ${T().tiers[ti][0]}</span>`;
   const n=$("next");n.textContent=round<10?T().next:T().seeFinal;n.classList.remove("hidden");
 }
 $("next").onclick=()=>{round<10?nextRound():endGame();};
+const bestKey=()=>basis==="age"?"tawafuq_best":"tawafuq_best_zodiac";
 function endGame(){
   $("play").classList.add("hidden");$("final").classList.remove("hidden");$("finalScore").textContent=pts;
-  let best=pts;try{best=Math.max(pts,+(localStorage.getItem("tawafuq_best")||0));localStorage.setItem("tawafuq_best",best);}catch(e){}
+  let best=pts;try{best=Math.max(pts,+(localStorage.getItem(bestKey())||0));localStorage.setItem(bestKey(),best);}catch(e){}
   renderFinal(best);
 }
 function renderFinal(best){
-  if(best==null){try{best=+(localStorage.getItem("tawafuq_best")||pts);}catch(e){best=pts;}}
+  if(best==null){try{best=+(localStorage.getItem(bestKey())||pts);}catch(e){best=pts;}}
   $("rank").textContent=T().ranks[pts>=90?0:pts>=70?1:pts>=50?2:3];$("best").textContent=T().best(best);
 }
 $("again").onclick=startGame;
-$("share").onclick=()=>copyText(T().shareTxt(pts,$("rank").textContent));
+$("share").onclick=()=>copyText(T().shareTxt(pts,$("rank").textContent,basis==="zodiac"));
 
-/* ================= language & modes ================= */
+/* ================= language, modes, basis ================= */
+function fillSelects(){
+  [zG,zB].forEach(s=>{const v=s.value||(s===zG?"4":"0");s.innerHTML=SIGNS.map((g,i)=>`<option value="${i}">${g[0]} ${T().signs[i]}</option>`).join("");s.value=v;});
+}
 function applyLang(){
   document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";
-  document.title=lang==="ar"?"خريطة التوافق: لعبة الأعمار":"Match Map: The Age Game";
+  document.title=lang==="ar"?"خريطة التوافق: العمر والأبراج":"Match Map: Age & Zodiac Game";
   document.querySelectorAll("[data-t]").forEach(e=>e.textContent=T()[e.dataset.t]);
   $("lang").textContent=T().langBtn;$("install").textContent=T().install;
   $("nG").placeholder=T().phG;$("nB").placeholder=T().phB;
-  axX.textContent=T().axisX;axY.textContent=T().axisY;svg.setAttribute("aria-label",T().title);
-  $("mapHint").textContent=mode==="calc"?T().mapHintCalc:T().mapHintGame;
+  fillSelects();
+  svg.setAttribute("aria-label",T().title);
   $("rules").innerHTML=T().rules.map(([a,v])=>`<div>${a}: <b dir="ltr">${v}</b></div>`).join("");
+  $("zodRules").innerHTML=T().zRules.map(([a,v])=>`<div>${a}: <b dir="ltr">${v}</b></div>`).join("");
+  refresh();
+}
+function refresh(){
+  const z=basis==="zodiac";
+  $("ageInputs").classList.toggle("hidden",z);$("zodInputs").classList.toggle("hidden",!z);$("zodRulesCard").classList.toggle("hidden",!z);
+  $("mapHint").textContent=mode==="calc"?T().mapHintCalc:T().mapHintGame;
+  $("mapNote").textContent=z?T().mapNoteZod:T().mapNoteAge;
+  drawMap();lastTier=-1;
   if(mode==="calc")render();
   else if(!$("final").classList.contains("hidden"))renderFinal();
-  else if(cur){drawCouple();if(answered)showAnswer();}
+  else if(cur){drawCouple();if(answered)showAnswer();else mark(0,0,false);}
 }
 $("lang").onclick=()=>{lang=lang==="en"?"ar":"en";try{localStorage.setItem("mm_lang",lang);}catch(e){}applyLang();};
-document.querySelectorAll(".modes button").forEach(b=>b.onclick=()=>{
-  mode=b.dataset.m;document.querySelectorAll(".modes button").forEach(x=>x.classList.toggle("on",x===b));
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>{
+  mode=b.dataset.m;document.querySelectorAll("#modes button").forEach(x=>x.classList.toggle("on",x===b));
   $("calc").classList.toggle("hidden",mode!=="calc");$("game").classList.toggle("hidden",mode!=="game");
-  $("mapHint").textContent=mode==="calc"?T().mapHintCalc:T().mapHintGame;
-  if(mode==="game")startGame();else render();
+  if(mode==="game"){drawMap();startGame();$("mapHint").textContent=T().mapHintGame;}else refresh();
+});
+document.querySelectorAll("#basis button").forEach(b=>b.onclick=()=>{
+  if(basis===b.dataset.b)return;basis=b.dataset.b;
+  document.querySelectorAll("#basis button").forEach(x=>x.classList.toggle("on",x===b));
+  if(mode==="game"){refresh();startGame();}else refresh();
 });
 applyLang();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
@@ -385,6 +546,7 @@ let deferred=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;$("install").classList.remove("hidden");});
 $("install").onclick=async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;$("install").classList.add("hidden");};
 window.addEventListener("appinstalled",()=>{$("install").classList.add("hidden");toast(T().installed);});
+
 </script>
 </body>
 </html>
