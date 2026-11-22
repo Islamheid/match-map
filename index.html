@@ -65,6 +65,7 @@
   .initials{font-size:30px;font-weight:800;letter-spacing:1px;white-space:nowrap}
   .initials small{font-size:20px;color:var(--accent);margin:0 4px}
   .pop{animation:pop .45s ease}
+  svg .pop{transform-box:fill-box;transform-origin:center}
   @keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
   .pct{font-size:44px;font-weight:800;line-height:1}
   .bonus{font-size:15px;font-weight:600;color:var(--muted);margin-top:6px}
@@ -218,6 +219,7 @@ function signFromDate(m,d){ // returns sign index
 // relation by distance around the wheel
 const REL={0:"twin",1:"neighbor",2:"friendly",3:"friction",4:"element",5:"odd",6:"opposite"};
 const REL_SCORE={element:95,friendly:85,twin:78,opposite:70,neighbor:45,friction:30,odd:22};
+const REL_ICON={element:"💫",friendly:"🤝",twin:"🪞",opposite:"🧲",neighbor:"🏠",friction:"⚡",odd:"🌀"};
 const relOf=(a,b)=>{const k=Math.abs(a-b)%12;return REL[Math.min(k,12-k)];};
 const zScore=(a,b)=>REL_SCORE[relOf(a,b)];
 
@@ -229,7 +231,7 @@ en:{title:"Match Map",sub:"Do you two match? Work it out, or play and guess the 
   scaleLow:"Risky",scaleHigh:"Golden match",
   mapHintCalc:"Tap any square to pick from the map.",mapHintGame:"The couple shows up on the map after you answer.",
   mapNoteAge:"Map colors show age only; initials then add or take away up to 10 points.",
-  mapNoteZod:"Map colors show signs only; initials then add or take away up to 10 points.",
+  mapNoteZod:"Green means a better match. Tap a square to see what kind of match it is; initials then add or take away up to 10 points.",
   phG:"His name (optional)",phB:"Her name (optional)",groomAge:"His age",brideAge:"Her age",
   hisSign:"His sign",herSign:"Her sign",dobAsk:"Don't know your sign? Enter your birth date",hisDob:"His birth date",herDob:"Her birth date",
   adultsOnly:"This game is for ages 18+ 🙂",
@@ -260,7 +262,7 @@ en:{title:"Match Map",sub:"Do you two match? Work it out, or play and guess the 
   zTips:{element:"Same element: keep things fresh so comfort doesn't turn into routine.",friendly:"Friendly elements: lean on each other's strengths.",
     twin:"Twin signs: give each other room to be different.",opposite:"Opposites: celebrate the differences instead of fixing them.",
     neighbor:"Neighbors: ask questions, you'll be surprised.",friction:"Friction: agree on how you argue before you need to.",odd:"Odd couple: small shared rituals build a big bridge."},
-  zRules:[["🔥 Same element (e.g. Aries & Leo)","95%"],["🤝 Friendly elements: fire & air, earth & water","85%"],["🪞 Same sign","78%"],["🧲 Opposite signs","70%"],["🏠 Next-door signs","45%"],["⚡ Clashing elements","30%"],["🌀 Odd couple (5 signs apart)","22%"]],
+  zRules:[["💫 Same element (e.g. Aries & Leo)","95%"],["🤝 Friendly elements: fire & air, earth & water","85%"],["🪞 Same sign","78%"],["🧲 Opposite signs","70%"],["🏠 Next-door signs","45%"],["⚡ Clashing elements","30%"],["🌀 Odd couple (5 signs apart)","22%"]],
   lb:{same:"Same initial ✨",fam:"Look-alike letters 👯",adj:"Alphabet neighbors 🏠",near:"Close in the alphabet 🤝",seven:"Lucky number seven 🍀",far:"Opposite ends of the alphabet 🌍",neutral:"Neutral letters 🙂",mixed:"Different alphabets 🌐"},
   rules:[["✨ Same initial","+10"],["👯 Look-alike letters (b d p q, m n w, u v…)","+6"],["🏠 Next to each other in the alphabet","+5"],["🤝 Two letters or fewer apart","+3"],["🍀 Their alphabet positions add up to a multiple of 7","+4"],["🌍 Opposite ends of the alphabet","−4"]],
   men:["Adam","Ben","Chris","Daniel","Ethan","Jack","Leo","Liam","Mark","Noah","Omar","Ryan","Sam","Tom","Yusuf","Zack"],
@@ -271,7 +273,7 @@ ar:{title:"خريطة التوافق",sub:"هل أنتما متوافقان؟ ا
   scaleLow:"مغامرة",scaleHigh:"توافق ذهبي",
   mapHintCalc:"اضغط على أي مربع لتختار منه مباشرة.",mapHintGame:"ستظهر مكان الزوجين على الخريطة بعد إجابتك.",
   mapNoteAge:"ألوان الخريطة للعمر فقط، ثم تضيف الحروف أو تخصم حتى 10 نقاط.",
-  mapNoteZod:"ألوان الخريطة للأبراج فقط، ثم تضيف الحروف أو تخصم حتى 10 نقاط.",
+  mapNoteZod:"الأخضر يعني توافقاً أكبر. اضغط على أي مربع لترى نوع التوافق، ثم تضيف الحروف أو تخصم حتى 10 نقاط.",
   phG:"اسم العريس (اختياري)",phB:"اسم العروس (اختياري)",groomAge:"عمر العريس",brideAge:"عمر العروس",
   hisSign:"برج العريس",herSign:"برج العروس",dobAsk:"لا تعرف برجك؟ أدخل تاريخ الميلاد",hisDob:"تاريخ ميلاد العريس",herDob:"تاريخ ميلاد العروس",
   adultsOnly:"هذه اللعبة لمن هم 18 سنة فأكثر 🙂",
@@ -302,7 +304,7 @@ ar:{title:"خريطة التوافق",sub:"هل أنتما متوافقان؟ ا
   zTips:{element:"نفس العنصر: جدّدا حياتكما حتى لا تتحول الراحة إلى روتين.",friendly:"عنصران صديقان: استفيدا من نقاط قوة كل منكما.",
     twin:"برجان توأمان: اتركا مساحة ليكون كل منكما مختلفاً.",opposite:"الأضداد: احتفلا بالاختلاف بدل محاولة تغييره.",
     neighbor:"جاران: اسألا بعضكما كثيراً، ستندهشان.",friction:"احتكاك: اتفقا على طريقة الخلاف قبل أن تحتاجاها.",odd:"ثنائي غريب: عادات صغيرة مشتركة تبني جسراً كبيراً."},
-  zRules:[["🔥 نفس العنصر (مثل الحمل والأسد)","95%"],["🤝 عنصران صديقان: نار وهواء، تراب وماء","85%"],["🪞 نفس البرج","78%"],["🧲 برجان متقابلان","70%"],["🏠 برجان جاران","45%"],["⚡ عنصران متصادمان","30%"],["🌀 ثنائي غريب (بينهما 5 أبراج)","22%"]],
+  zRules:[["💫 نفس العنصر (مثل الحمل والأسد)","95%"],["🤝 عنصران صديقان: نار وهواء، تراب وماء","85%"],["🪞 نفس البرج","78%"],["🧲 برجان متقابلان","70%"],["🏠 برجان جاران","45%"],["⚡ عنصران متصادمان","30%"],["🌀 ثنائي غريب (بينهما 5 أبراج)","22%"]],
   lb:{same:"حرف واحد يجمعكما ✨",fam:"حرفان شقيقان في الرسم 👯",adj:"جيران في الأبجدية 🏠",near:"قريبان في الأبجدية 🤝",seven:"رقم الحظ سبعة 🍀",far:"من طرفي الأبجدية 🌍",neutral:"حروف محايدة 🙂",mixed:"أبجديتان مختلفتان 🌐"},
   rules:[["✨ نفس الحرف","+10"],["👯 حرفان شقيقان في الرسم (ب ت ث، ج ح خ، س ش…)","+6"],["🏠 متجاوران في الأبجدية","+5"],["🤝 بينهما حرفان أو أقل","+3"],["🍀 مجموع ترتيبهما من مضاعفات 7","+4"],["🌍 من طرفي الأبجدية","−4"]],
   men:["أحمد","محمد","عمر","يوسف","كريم","مصطفى","خالد","حسن","طارق","مازن","سيف","آدم","زياد","هشام","سامح","وليد"],
@@ -348,7 +350,7 @@ const ST=[[0,[192,57,43]],[25,[230,126,58]],[50,[242,199,92]],[75,[168,207,114]]
 function grad(s){for(let i=1;i<ST.length;i++)if(s<=ST[i][0]){const[a,ca]=ST[i-1],[b,cb]=ST[i],t=(s-a)/(b-a);return"rgb("+ca.map((v,j)=>Math.round(v+(cb[j]-v)*t))+")";}}
 const ns="http://www.w3.org/2000/svg",svg=$("svg"),FONT='Poppins, Cairo, sans-serif';
 let G={}; // geometry of current map
-let hl,tagBg,tag,vl,hz,axX,axY,tagText="";
+let hl,tagBg,tag,vl,hz,axX,axY,relIcon,tagText="";
 function el(t,a,txt){const e=document.createElementNS(ns,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;svg.appendChild(e);return e;}
 function drawMap(){
   svg.innerHTML="";
@@ -361,29 +363,36 @@ function drawMap(){
       el("text",{x:G.X0+i*G.S+G.S/2,y:G.Y0+G.N*G.S+26,"text-anchor":"middle","font-size":17,fill:"#6a6570","font-family":FONT},v);
       el("text",{x:G.X0-10,y:G.Y0+(G.N-1-i)*G.S+G.S/2+6,"text-anchor":"end","font-size":17,fill:"#6a6570","font-family":FONT},v);}
   }else{
-    G={N:12,S:62,X0:104,Y0:14,min:0};
+    G={N:12,S:56,X0:190,Y0:10,min:0};
     for(let i=0;i<12;i++)for(let j=0;j<12;j++){
-      const s=zScore(j,i);
-      el("rect",{x:G.X0+i*G.S,y:G.Y0+(11-j)*G.S,width:G.S,height:G.S,fill:grad(s),stroke:"#fff","stroke-width":2,rx:6});
-      el("text",{x:G.X0+i*G.S+G.S/2,y:G.Y0+(11-j)*G.S+G.S/2+6,"text-anchor":"middle","font-size":15,"font-weight":600,fill:"#fff","fill-opacity":.85,"font-family":FONT,"pointer-events":"none"},s);}
+      const r=el("rect",{x:G.X0+i*G.S,y:G.Y0+(11-j)*G.S,width:G.S,height:G.S,fill:grad(zScore(j,i)),stroke:"#fff","stroke-width":2,rx:6});
+      const tt=document.createElementNS(ns,"title");tt.textContent=`${signLabel(j)} ♥ ${signLabel(i)}`;r.appendChild(tt);}
+    const by=G.Y0+12*G.S;
     for(let i=0;i<12;i++){
-      el("text",{x:G.X0+i*G.S+G.S/2,y:G.Y0+12*G.S+34,"text-anchor":"middle","font-size":28,fill:"#5b4b8a","font-family":"sans-serif"},SIGNS[i][0]);
-      el("text",{x:G.X0-14,y:G.Y0+(11-i)*G.S+G.S/2+10,"text-anchor":"end","font-size":28,fill:"#5b4b8a","font-family":"sans-serif"},SIGNS[i][0]);}
+      const cx=G.X0+i*G.S+G.S/2, cy=G.Y0+(11-i)*G.S+G.S/2;
+      el("text",{x:cx,y:by+30,"text-anchor":"middle","font-size":26,fill:"#5b4b8a","font-family":"sans-serif"},SIGNS[i][0]);
+      el("text",{x:cx+6,y:by+50,"text-anchor":"end","font-size":20,"font-weight":600,fill:"#3a3540","font-family":FONT,transform:`rotate(-45 ${cx+6} ${by+50})`},T().signs[i]);
+      el("text",{x:G.X0-8,y:cy+9,"text-anchor":"end","font-size":26,fill:"#5b4b8a","font-family":"sans-serif"},SIGNS[i][0]);
+      el("text",{x:G.X0-42,y:cy+7,"text-anchor":"end","font-size":20,"font-weight":600,fill:"#3a3540","font-family":FONT},T().signs[i]);}
   }
   const span=G.N*G.S;
-  axX=el("text",{x:G.X0+span/2,y:G.Y0+span+(basis==="age"?58:72),"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT});
-  axY=el("text",{x:22,y:G.Y0+span/2,"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT,transform:"rotate(-90 22 "+(G.Y0+span/2)+")"});
+  axX=el("text",{x:G.X0+span/2,y:G.Y0+span+(basis==="age"?58:168),"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT});
+  const ayx=basis==="age"?22:20;
+  axY=el("text",{x:ayx,y:G.Y0+span/2,"text-anchor":"middle","font-size":21,"font-weight":800,fill:"#1d1b22","font-family":FONT,transform:"rotate(-90 "+ayx+" "+(G.Y0+span/2)+")"});
   axX.textContent=basis==="age"?T().axisX:T().axisXz;axY.textContent=basis==="age"?T().axisY:T().axisYz;
   hl=el("rect",{width:G.S+8,height:G.S+8,fill:"none",stroke:"#1d1b22","stroke-width":4,rx:basis==="age"?4:9,"pointer-events":"none"});
   tagBg=el("rect",{rx:12,height:30,fill:"#1d1b22","pointer-events":"none"});
   tag=el("text",{"font-size":18,"font-weight":800,fill:"#fff","font-family":FONT,"text-anchor":"middle","pointer-events":"none"});
   vl=el("line",{stroke:"#1d1b22","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.6,"pointer-events":"none"});
   hz=el("line",{stroke:"#1d1b22","stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.6,"pointer-events":"none"});
-  [hl,vl,hz,tag,tagBg].forEach(e=>e.style.display="none");
+  relIcon=el("text",{"font-size":32,"text-anchor":"middle","font-family":"sans-serif","pointer-events":"none"});
+  [hl,vl,hz,tag,tagBg,relIcon].forEach(e=>e.style.display="none");
 }
 function mark(gv,bv,show=true){ // gv = his value, bv = her value
-  [hl,vl,hz,tag,tagBg].forEach(e=>e.style.display=show?"":"none");if(!show)return;
+  [hl,vl,hz,tag,tagBg].forEach(e=>e.style.display=show?"":"none");relIcon.style.display="none";if(!show)return;
   const S=G.S,x=G.X0+(bv-G.min)*S,y=G.Y0+(G.N-1-(gv-G.min))*S;
+  if(basis==="zodiac"){relIcon.textContent=REL_ICON[relOf(gv,bv)];relIcon.setAttribute("x",x+S/2);relIcon.setAttribute("y",y+S/2+11);relIcon.style.display="";
+    relIcon.classList.remove("pop");void relIcon.getBBox();relIcon.classList.add("pop");}
   hl.setAttribute("x",x-4);hl.setAttribute("y",y-4);
   vl.setAttribute("x1",x+S/2);vl.setAttribute("x2",x+S/2);vl.setAttribute("y1",y+S);vl.setAttribute("y2",G.Y0+G.N*S);
   hz.setAttribute("x1",G.X0);hz.setAttribute("x2",x);hz.setAttribute("y1",y+S/2);hz.setAttribute("y2",y+S/2);
@@ -418,7 +427,7 @@ function render(){
     $("tip").textContent="💡 "+(d>12?tp.bigOlderHim:d<-8?tp.bigOlderHer:yy<22?tp.young:(d>=0&&d<=4)?tp.close:tp.any);
   }else{
     const r=relOf(x,y),[rn,rd]=T().rel[r];
-    $("tier").textContent=who+tn;$("desc").innerHTML=`<b>${signLabel(x)} ♥ ${signLabel(y)}</b><br>${rn}: ${rd}`;
+    $("tier").textContent=who+tn;$("desc").innerHTML=`<b>${signLabel(x)} ♥ ${signLabel(y)}</b><br>${REL_ICON[r]} ${rn}: ${rd}`;
     $("tip").textContent="💡 "+T().zTips[r];
   }
   $("meter").style.width=Math.max(4,s)+"%";$("meter").style.background=t.col;
@@ -484,7 +493,7 @@ function showAnswer(){
   const F=finalScore(cur.x,cur.y,cur.gn,cur.bn),ti=tierOf(F.s),i=cur.pick,diff=Math.abs(i-ti);
   document.querySelectorAll(".choice").forEach(c=>{c.disabled=true;const k=+c.dataset.i;if(k===ti)c.classList.add("right");else if(k===i)c.classList.add("wrong");});
   mark(cur.x,cur.y,true);
-  const baseW=basis==="age"?T().ageWord:`${T().signsWord} (${T().rel[relOf(cur.x,cur.y)][0]})`;
+  const baseW=basis==="age"?T().ageWord:`${T().signsWord} (${REL_ICON[relOf(cur.x,cur.y)]} ${T().rel[relOf(cur.x,cur.y)][0]})`;
   $("fb").innerHTML=(diff===0?T().right:diff===1?T().close:T().miss)+
     `<br><span style="font-weight:600;color:var(--muted)">${baseW} ${F.base}% · ${T().lettersWord} ${sign(F.lb.v)} (${T().lb[F.lb.k]}) = ${F.s}% · ${T().tiers[ti][0]}</span>`;
   const n=$("next");n.textContent=round<10?T().next:T().seeFinal;n.classList.remove("hidden");
@@ -546,6 +555,8 @@ let deferred=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;$("install").classList.remove("hidden");});
 $("install").onclick=async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;$("install").classList.add("hidden");};
 window.addEventListener("appinstalled",()=>{$("install").classList.add("hidden");toast(T().installed);});
+
+
 
 </script>
 </body>

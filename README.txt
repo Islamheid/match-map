@@ -29,8 +29,8 @@ Installing on a phone
 - iPhone (Safari): open the link → Share → Add to Home Screen.
 
 Updating later
-Upload the new index.html, then in sw.js change  const CACHE = "matchmap-v3";
-to matchmap-v4 (then v5 ...) so installed copies pick up the new version.
+Upload the new index.html, then in sw.js change  const CACHE = "matchmap-v4";
+to matchmap-v5 (then v6 ...) so installed copies pick up the new version.
 
 Optional next step: Google Play
 Once the site is live, open https://www.pwabuilder.com, paste your link and choose Android
@@ -41,4 +41,4 @@ to get a package ready for Google Play (needs a Google Play developer account).
 1. فك الضغط، وافتح https://app.netlify.com/drop واسحب المجلد إليها لتحصل على رابط.
 2. على أندرويد: افتح الرابط واضغط «📲 Install app». على آيفون: مشاركة ← إضافة إلى الشاشة الرئيسية.
 3. اللعبة بالإنجليزية افتراضياً، وزر «عربي» أعلى الصفحة يحوّلها للعربية (ويتذكر اختيارك).
-4. عند التحديث: غيّر رقم النسخة في sw.js (matchmap-v3 ← matchmap-v4).
+4. عند التحديث: غيّر رقم النسخة في sw.js (matchmap-v4 ← matchmap-v5).

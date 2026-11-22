@@ -1,5 +1,5 @@
 // Match Map — works offline after the first visit
-const CACHE = "matchmap-v3";
+const CACHE = "matchmap-v4";
 const CORE = ["./", "./index.html", "./manifest.json",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png"];
 
